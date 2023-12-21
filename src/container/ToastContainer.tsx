@@ -17,6 +17,8 @@ const ToastContainer = () => {
     setToastItem(nextToastList?.[0] || null)
   }
 
+  if(!toastItem) return <button onClick={() => handleAddToast({ id: Date.now(), message: `hello world ${Date.now()}`, duration: 3000 })}>弹出Toast</button>
+
   return (
     <>
       <button onClick={() => handleAddToast({ id: Date.now(), message: `hello world ${Date.now()}`, duration: 3000 })}>弹出Toast</button>
