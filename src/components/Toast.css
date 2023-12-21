@@ -1,0 +1,53 @@
+@keyframes slideIn {
+  from {
+    top: -50px;
+  }
+  to {
+    top: 50px;
+  }
+}
+
+
+@keyframes slideOut {
+  from {
+    top: 50px;
+  }
+  to {
+    top: -50px;
+  }
+}
+
+
+.toast {
+  position: fixed;
+  left: 50%;
+  max-width: 480px;
+  background-color: rgba(0, 0, 0, 0.8);
+  padding: 8px 16px;
+  border-radius: 4px;
+  color: #fff;
+
+  &.show {
+    opacity: 1;
+    top: 50px;
+    animation: slideIn 300ms linear;
+  }
+
+  &.hide {
+    opacity: 0;
+    top: -50px;
+    animation: slideOut 300ms linear;
+  }
+
+  .close-icon {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    cursor: pointer;
+    color: #fff;
+
+    &:hover {
+      color: #ccc;
+    }
+  }
+}
