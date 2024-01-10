@@ -1,17 +1,13 @@
 import { useState, useRef } from 'react'
+import { TodoItem, TodoItemType } from '../components/TodoItem'
+import { Title } from '../components/Title'
 
-type TodoItem = {
-  id: number
-  name: string
-  isDone: boolean
-}
-
-const TodoList = () => {
+const TodoListContainer = () => {
   const list = [{ id: 1, name: 'todo1', isDone: false }, { id: 2, name: 'todo2', isDone: false }]
   const [todoList, setTodoList] = useState(list)
   const inputRef = useRef(null)
 
-  const handleClick = (item: TodoItem) => {
+  const handleClick = (item: TodoItemType) => {
     const { id } = item
     const newList = todoList.map(item => {
       if (item.id === id) {
@@ -43,7 +39,7 @@ const TodoList = () => {
   }
   return (
     <div>
-      <h1>TodoList</h1>
+      <Title>TodoList</Title>
       <button onClick={handleAll}>全部完成</button>
       <div>
         <input ref={inputRef} type="text" />
@@ -51,12 +47,7 @@ const TodoList = () => {
       </div>
       <div className="todo-list">
         {
-          todoList.map(item => (
-            <div key={item.id} onClick={() => handleClick(item)}>
-              {item.isDone ? '✅' : '❌'}
-              {item.name}
-            </div>
-          ))
+          todoList.map(item => (<TodoItem key={item.id} item={item} handleClick={handleClick} />))
         }
       </div>
     </div>
@@ -64,5 +55,5 @@ const TodoList = () => {
 }
 
 export {
-  TodoList
+  TodoListContainer
 }
