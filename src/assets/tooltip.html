@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    .container {
+      width: 300vw;
+      height: 300vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .base {
+      position: relative;
+      width: 100px;
+      height: 50px;
+      border-radius: 10px;
+      /* margin: 300px auto; */
+      display: block;
+    }
+
+    .tip-container {
+      width: 200px;
+      height: 100px;
+      position: absolute;
+      position: fixed;
+      background-color: aqua;
+      border-radius: 8px;
+    }
+
+    .tip-container .arrow {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border: 10px solid;
+      border-color: transparent;
+    }
+
+    .tip-container.arrow-left .arrow {
+      border-left-color: aqua;
+      top: 50%;
+      left: calc(100%);
+    }
+
+    .tip-container.arrow-right .arrow {
+      border-right-color: aqua;
+      top: 50%;
+      left: -20px;
+    }
+
+    .tip-container.arrow-top .arrow {
+      border-top-color: aqua;
+      top: calc(100%);
+      left: 50%;
+    }
+
+    .tip-container.arrow-bottom .arrow {
+      border-bottom-color: aqua;
+      top: -20px;
+      left: 50%;
+    }
+
+    html, body {
+      height: 100%;
+      width: 100%;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button class="base">按钮</button>
+  </div>
+  <div class="tip-container">
+    <div class="arrow"></div>
+    <div class="">这是一段提示</div>
+  </div>
+  <script>
+    // position 为top时，tip在base的上方
+    // position 为bottom时，tip在base的下方
+    // position 为left时，tip在base的左方
+    // position 为right时，tip在base的右方
+    function setTipPosition(position) {
+
+      const base = document.querySelector(".base");
+      const tipContainer = document.querySelector(".tip-container");
+      // 判断tipContainer中是否包含 arrow-left、arrow-right、arrow-top、arrow-bottom这些class，如果有就移除
+      if(tipContainer.classList.contains("arrow-left")) {
+        tipContainer.classList.remove("arrow-left");
+      }
+      if(tipContainer.classList.contains("arrow-right")) {
+        tipContainer.classList.remove("arrow-right");
+      }
+      if(tipContainer.classList.contains("arrow-top")) {
+        tipContainer.classList.remove("arrow-top");
+      }
+      if(tipContainer.classList.contains("arrow-bottom")) {
+        tipContainer.classList.remove("arrow-bottom");
+      }
+
+      tipContainer.classList.add(`arrow-${position}`);
+
+      const baseRect = base.getBoundingClientRect();
+      const tipRect = tipContainer.getBoundingClientRect();
+
+      const { width: baseWidth, height: baseHeight } = baseRect;
+      const { width: tipWidth, height: tipHeight } = tipRect;
+
+      let tipLeft = 0;
+      let tipTop = 0;
+      let transX = 0;
+      let transY = 0;
+      if(position === "top") {
+        tipLeft = baseRect.left + baseWidth / 2 - tipWidth / 2;
+        tipTop = baseRect.top - tipHeight - 10;
+      } else if(position === "bottom") {
+        tipLeft = baseRect.left + baseWidth / 2 - tipWidth / 2;
+        tipTop = baseRect.top + baseHeight + 10;
+      } else if(position === "left") {
+        tipLeft = baseRect.left - tipWidth - 10;
+        tipTop = baseRect.top + baseHeight / 2 - tipHeight / 2;
+      } else if(position === "right") {
+        tipLeft = baseRect.left + baseWidth + 10;
+        tipTop = baseRect.top + baseHeight / 2 - tipHeight / 2;
+      }
+      if(position === 'bottom' || position === 'top') {
+        if(tipLeft < 0) {
+          // tipLeft = 0;
+          transX = -tipLeft
+          console.log
+        }
+        if(tipLeft + tipWidth > window.innerWidth) {
+          // tipLeft = window.innerWidth - tipWidth;
+          transX = -(tipLeft + tipWidth - window.innerWidth);
+        }
+        if(tipTop < 0) {
+          tipTop = baseRect.top + baseHeight + 10;
+          window.position = 'bottom';
+        }
+        if(tipTop + tipHeight > window.innerHeight) {
+          tipTop = baseRect.top - tipHeight - 10;
+          window.position = 'top';
+        }
+      }
+
+      if(position === 'left' || position === 'right') {
+        if(tipLeft < 0) {
+          tipLeft = baseRect.left + baseWidth + 10;
+          window.position = 'right';
+        }
+        if(tipLeft + tipWidth > window.innerWidth) {
+          tipLeft = baseRect.left - tipWidth - 10;
+          window.position = 'left';
+        }
+        if(tipTop < 0) {
+          // tipTop = 0;
+          transY = -tipTop;
+        }
+        if(tipTop + tipHeight > window.innerHeight) {
+          // tipTop = window.innerHeight - tipHeight;
+          transY = -(tipTop + tipHeight - window.innerHeight);
+        }
+      }
+      tipContainer.querySelector('.arrow').style.transform = `translate(${-transX}px, ${-transY}px)`;
+      tipContainer.style.transform = `translate(${transX}px, ${transY}px)`;
+      tipContainer.style.left = tipLeft + "px";
+      tipContainer.style.top = tipTop + "px";
+    }
+    window.position = "left";
+    
+
+    window.onload = function() {
+      setTipPosition(position);
+    }
+
+    window.onscroll = function() {
+      console.log('scroll', position)
+      setTipPosition(position);
+    }
+
+    window.onresize = function() {
+      setTipPosition(position);
+    }
+    
+  </script>
+</body>
+</html>
