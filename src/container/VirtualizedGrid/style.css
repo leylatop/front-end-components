@@ -1,0 +1,64 @@
+body,
+html {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+.header-sticky {
+  position: sticky;
+  height: 100px;
+  background-color: whitesmoke;
+  z-index: 1000;
+  top: 0;
+}
+.artwork {
+  height: 200px;
+  background-color: gainsboro;
+}
+.private-container {
+  height: 100%;
+  overflow: hidden;
+  margin: 0;
+  display: flex;
+}
+
+.right-column,
+.left-column {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.right-column {
+  flex: 1;
+}
+.left-column {
+  flex: 0 0 200px;
+  background-color: beige;
+}
+
+.content-container {
+  flex: 1;
+
+  overflow-y: auto;
+  position: relative;
+}
+
+.list-row {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.list-row > div {
+  flex: 1;
+  background-color: lightyellow;
+}
+
+div.list-row:nth-of-type(2n + 1) > div:nth-last-of-type(2n + 1) {
+  background-color: #fff;
+}
+div.list-row:nth-of-type(2n) > div:nth-last-of-type(2n) {
+  background-color: #fff;
+}
