@@ -1,5 +1,4 @@
 import React from "react";
-import ReactDOM from "react-dom";
 import OverviewListContainer from "./OverviewListContainer";
 import './style.css'
 
@@ -19,6 +18,3 @@ class App extends React.Component {
 export {
   App as VirtualizedGrid
 }
-
-// const rootElement = document.getElementById("root");
-// ReactDOM.render(<App />, rootElement);

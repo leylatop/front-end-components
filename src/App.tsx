@@ -41,7 +41,7 @@ function App() {
 
 export const Home = () => {
   return (
-    <div>
+    <div style={{ margin: '0 auto'}}>
       <h1>Home</h1>
       <Link to="/todo-list">Todo List</Link>
       <br />

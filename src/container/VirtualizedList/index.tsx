@@ -1,39 +1,20 @@
-import React, { useState } from "react";
-import { FixedSizeList as List } from "react-window";
-// import { List } from "react-virtualized";
+import React from "react";
+import OverviewListContainer from "./OverviewListContainer";
+import './style.css'
 
-
-
-const VirtualizedList = () => {
-  const [data, setData] = useState(() =>
-    Array.from({ length: 10000 }, (_, i) => i)
-  );
-  const reverse = () => {
-    setData((data) => data.slice().reverse());
-  };
-
-  return (
-    <main>
-      <button onClick={reverse}>Reverse</button>
-      <List
-        innerElementType="ul"
-        itemCount={data.length}
-        itemSize={20}
-        height={800}
-        width={400}
-      >
-        {({ index, style }) => {
-          return (
-            <li style={style}>
-              {data[index]}
-            </li>
-          );
-        }}
-      </List>
-    </main>
-  );
-};
+class App extends React.Component {
+  render() {
+    return (
+      <div className={"private-container"}>
+        <div className={"left-column"} />
+        <div className={"right-column"}>
+          <OverviewListContainer />
+        </div>
+      </div>
+    );
+  }
+}
 
 export {
-  VirtualizedList
+  App as VirtualizedList
 }
