@@ -5,26 +5,18 @@ import './style.css'
 class OverviewList extends React.PureComponent {
   constructor(props) {
     super(props);
-
-    this.state = { itemsPerRow: 4 };
   }
 
   render() {
     const { items, container } = this.props;
-    console.log(items);
     return (
-      <div>
-        <div className="header-sticky">12345</div>
         <WindowScroller scrollElement={container}>
           {({ height, isScrolling, registerChild, scrollTop }) => {
             return (
               <AutoSizer disableHeight>
                 {({ width }) => {
-                  console.log(width);
-                  let itemsPerRow = Math.max(
-                    1,
-                    Math.min(Math.round(width / 200), 4)
-                  );
+                  // 每个item宽度为158
+                  const itemsPerRow = Math.max(1, Math.floor(width / (158 + 14)));
                   return (
                     <div ref={registerChild}>
                       <List
@@ -39,14 +31,11 @@ class OverviewList extends React.PureComponent {
                             fromIndex + itemsPerRow,
                             items.length
                           );
-                          let itemsToAdd = [];
-                          console.log(fromIndex, toIndex);
+                          const itemsToAdd = [];
                           for (let idx = fromIndex; idx < toIndex; idx++) {
                             const item = items[idx];
-                            console.log(item);
-
                             itemsToAdd.push(
-                              <div>
+                              <div className="grid-item">
                                 {index * itemsPerRow + (idx % itemsPerRow)} -{" "}
                                 {item.name}
                               </div>
@@ -69,7 +58,6 @@ class OverviewList extends React.PureComponent {
             );
           }}
         </WindowScroller>
-      </div>
     );
   }
 }

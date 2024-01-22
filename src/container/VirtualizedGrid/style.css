@@ -5,6 +5,31 @@ html {
   margin: 0;
   padding: 0;
 }
+
+.private-container {
+  height: 100%;
+  width: 100vw;
+  /* overflow: hidden; */
+  margin: 0;
+  display: flex;
+}
+
+
+.right-column,
+.left-column {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.right-column {
+  flex: 1;
+}
+.left-column {
+  flex: 0 0 200px;
+  background-color: beige;
+}
+
 .header-sticky {
   position: sticky;
   height: 100px;
@@ -15,12 +40,6 @@ html {
 .artwork {
   height: 200px;
   background-color: gainsboro;
-}
-.private-container {
-  height: 100%;
-  overflow: hidden;
-  margin: 0;
-  display: flex;
 }
 
 .right-column,
@@ -40,8 +59,8 @@ html {
 
 .content-container {
   flex: 1;
-
   overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
 }
 
@@ -53,12 +72,21 @@ html {
 
 .list-row > div {
   flex: 1;
-  background-color: lightyellow;
+  background-color: aqua;
+  width: 158px;
+  max-width: 158px;
+  margin-right: 14px;
+  margin-bottom: 14px;
+
+  &:last-child {
+    margin-right: 0;
+    /* margin-bottom: 0; */
+  }
 }
 
-div.list-row:nth-of-type(2n + 1) > div:nth-last-of-type(2n + 1) {
+/* div.list-row:nth-of-type(2n + 1) > div:nth-last-of-type(2n + 1) {
   background-color: #fff;
 }
 div.list-row:nth-of-type(2n) > div:nth-last-of-type(2n) {
   background-color: #fff;
-}
+} */
