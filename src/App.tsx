@@ -5,6 +5,7 @@ import { ListContainer } from './container/List'
 import { FuncChildClassParent, FuncChildFuncParent, ClassChildClassParent, ClassChildFuncParent, FuncChildRefCallbackParent, ClassChildRefCallbackParent, RefDemo } from './container/refDemo'
 import { VirtualizedList } from './container/VirtualizedList'
 import { VirtualizedGrid } from './container/VirtualizedGrid'
+import { VirtualizedTree } from './container/VirtualizedTree'
 import { ReactCloneElement } from './container/refDemo/ReactCloneElement'
 import './App.css'
 import {
@@ -33,6 +34,7 @@ function App() {
         <Route path="/class-child-ref-callback-parent" element={<ClassChildRefCallbackParent />} />
         <Route path="/virtualized-list" element={<VirtualizedList />} />
         <Route path="/virtualized-grid" element={<VirtualizedGrid />} />
+        <Route path="/virtualized-tree" element={<VirtualizedTree />} />
         <Route path="/react-clone-element" element={<ReactCloneElement />} />
       </Routes>
     </BrowserRouter>
@@ -56,6 +58,8 @@ export const Home = () => {
       <Link to="/virtualized-list">Virtualized List</Link>
       <br />
       <Link to="/virtualized-grid">Virtualized Grid</Link>
+      <br />
+      <Link to="/virtualized-tree">Virtualized Tree</Link>
       <br />
       <Link to="/react-clone-element">React Clone Element</Link>
     </div>
