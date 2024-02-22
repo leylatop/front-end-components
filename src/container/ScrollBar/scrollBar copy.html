@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    * {
+      /* margin: 0;
+      padding: 0;
+      box-sizing: border-box; */
+    }
+
+    .scroll-container {
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      scrollbar-width: none;
+      background-color: aqua;
+      border-radius: 4px;
+    }
+
+    .scroll-content {
+      width: 100%;
+      height: auto;
+    }
+
+    .container {
+      position: relative;
+      width: 100%;
+      height: 400px;
+    }
+
+    .bar {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 10px;
+      height: 100%;
+      /* background-color: #f1f1f1; */
+    }
+
+    .thumb {
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 6px;
+      border-radius: 10px;
+      /* height: 50px; */
+      transition: 0.3s background-color;
+      background-color: #888;
+
+      &:hover {
+        background-color: #555;
+      }
+      
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="scroll-container">
+      <div class="scroll-content">
+        <!-- 写100个div，div的内容是从1到100 -->
+        <!-- Your scrollable content here -->
+      </div>
+    </div>
+    <div class="bar">
+      <div class="thumb"></div>
+    </div>
+    <div class="bar">
+      <div class="thumb"></div>
+    </div>
+  </div>
+  <script>
+    const array = Array.from({ length: 100 }, (v, i) => i + 1);
+    const scrollContent = document.querySelector('.scroll-content');
+    array.forEach((item) => {
+      const div = document.createElement('div');
+      div.textContent = item;
+      scrollContent.appendChild(div);
+    });
+    document.addEventListener('DOMContentLoaded', function () {
+      const scrollContent = document.querySelector('.scroll-content');
+      const scrollContainer = document.querySelector('.scroll-container');
+      const bar = document.querySelector('.bar');
+      const thumb = document.querySelector('.thumb');
+      let isDragging = false;
+      function updateSlider(scrollTop) {
+        sliderHeight = scrollContainer.clientHeight * bar.clientHeight / scrollContainer.scrollHeight;
+        // sliderRatio 是滑块的高度和滚动内容的高度的比值
+        sliderRatio = (bar.clientHeight - sliderHeight) / (scrollContainer.scrollHeight - scrollContainer.clientHeight);
+        sliderTop = scrollTop * sliderRatio;
+        // 处理sliderTop的边界值，不能超过滚动条的最大高度，不能小于0
+        sliderTop = Math.max(sliderTop, 0);
+        sliderTop = Math.min(sliderTop, bar.clientHeight - sliderHeight);
+        // 更新滑块的高度和位置
+        thumb.style.height = sliderHeight + 'px';
+        thumb.style.top = sliderTop + 'px';
+      }
+      let isShowBar = false;
+
+      function autoHideBar() {
+        function showBar() {
+          if(scrollContainer.scrollHeight <= scrollContainer.clientHeight) return;
+          bar.style.display = 'block';
+          updateSlider(scrollContainer.scrollTop)
+        }
+
+        function hideBar() {
+          bar.style.display = 'none';
+        }
+
+        bar.style.display = 'none';
+        const containerRect = scrollContainer.getBoundingClientRect();
+        document.addEventListener('mousemove', (e) => {
+          // 判断鼠标是否在滚动容器内
+          const isIn = e.clientX >= containerRect.left && e.clientX <= containerRect.right && e.clientY >= containerRect.top && e.clientY <= containerRect.bottom;
+          if(isIn) {
+            if (!isShowBar) {
+              showBar();
+              console.log('show');
+              isShowBar = true;
+            }
+          } else {
+            if (isShowBar && !isDragging) {
+              hideBar();
+              isShowBar = false;
+            }
+          }
+        });
+      }
+      autoHideBar();
+      updateSlider(scrollContainer.scrollTop);
+
+      // done
+      scrollContainer.addEventListener('scroll', function () {
+        updateSlider(scrollContainer.scrollTop);
+      });
+
+      // done
+      thumb.addEventListener('mousedown', (e) => {
+        let lastedPageY = e.pageY;
+        let lastedScrollTop = scrollContainer.scrollTop * sliderRatio;
+        let scrollTop;
+        const mouseMoveHandler = (e) => {
+          console.log('mousemove');
+          isDragging = true;
+          window.getSelection ? window.getSelection().removeAllRanges() : document.selection.empty();
+          let moveDelta = e.pageY - lastedPageY;
+          let sliderTop = lastedScrollTop + moveDelta;
+          scrollTop = sliderTop / sliderRatio;
+          scrollContainer.scrollTop = scrollTop;
+          updateSlider(scrollTop);
+        };
+
+        document.addEventListener('mousemove', mouseMoveHandler);
+
+        document.addEventListener('mouseup', () => {
+          if(isDragging) {
+            isDragging = false;
+          }
+          document.removeEventListener('mousemove', mouseMoveHandler);
+        });
+      })
+
+      // done
+      bar.addEventListener('mousedown', (e) => {
+        if (e.target !== thumb) {
+          let offsetY = e.pageY - bar.getBoundingClientRect().top - window.scrollY;
+          scrollTop = (offsetY - thumb.clientHeight / 2) / sliderRatio;
+          scrollContainer.scrollTop = scrollTop;
+          updateSlider(scrollTop);
+        }
+      });
+    });
+
+  </script>
+</body>
+
+</html>
