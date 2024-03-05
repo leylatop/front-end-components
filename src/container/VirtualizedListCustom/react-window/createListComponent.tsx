@@ -53,8 +53,8 @@ export default function createListComponent({
       const style = {
         position: 'absolute',
         width: '100%',
-        height: getItemSize(this.props, index),
-        top: getItemOffset(this.props, index)
+        height: getItemSize(this.props, index, this.instanceProps),
+        top: getItemOffset(this.props, index, this.instanceProps)
       }
       return style
     }
@@ -62,8 +62,8 @@ export default function createListComponent({
     _getRangeToRender = () => {
       const {scrollOffset} = this.state;
       const {itemCount, overScanCount} = this.props;
-      const startIndex = getStartIndexForOffset(this.props, scrollOffset);
-      const stopIndex = getStopIndexForStartIndex(this.props, startIndex);
+      const startIndex = getStartIndexForOffset(this.props, scrollOffset, this.instanceProps);
+      const stopIndex = getStopIndexForStartIndex(this.props, startIndex, scrollOffset, this.instanceProps);
       return [
         Math.max(0, startIndex - overScanCount),
         Math.min(itemCount - 1, stopIndex + overScanCount)
