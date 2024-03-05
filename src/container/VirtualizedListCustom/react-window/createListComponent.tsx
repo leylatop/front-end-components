@@ -8,6 +8,9 @@ export default function createListComponent({
   getStopIndexForStartIndex
 }) {
   return class extends React.Component {
+    static defaultProps = {
+      overScanCount: 2
+    }
     state = {
       scrollOffset: 0,
     }
@@ -56,9 +59,14 @@ export default function createListComponent({
 
     _getRangeToRender = () => {
       const {scrollOffset} = this.state;
+      const {itemCount, overScanCount} = this.props;
       const startIndex = getStartIndexForOffset(this.props, scrollOffset);
       const stopIndex = getStopIndexForStartIndex(this.props, startIndex);
-      return [startIndex, stopIndex];
+      return [
+        Math.max(0, startIndex - overScanCount),
+        Math.min(itemCount - 1, stopIndex + overScanCount)
+      ]
+      // return [startIndex, stopIndex];
     }
   }
 }
