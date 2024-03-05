@@ -1,4 +1,4 @@
-import { VariableSizeList } from 'react-window';
+import { VariableSizeList } from './react-window';
 import './VariableSizeListCustom.css';
 
 const rowSizes = new Array(1000).fill(true).map(() => 25 + Math.round(Math.random() * 50))

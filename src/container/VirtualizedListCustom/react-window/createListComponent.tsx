@@ -5,9 +5,11 @@ export default function createListComponent({
   getEstimatedTotalSize,
   getItemOffset,
   getStartIndexForOffset,
-  getStopIndexForStartIndex
+  getStopIndexForStartIndex,
+  initInstanceProps
 }) {
   return class extends React.Component {
+    instanceProps = initInstanceProps &&initInstanceProps(this.props)
     static defaultProps = {
       overScanCount: 2
     }
