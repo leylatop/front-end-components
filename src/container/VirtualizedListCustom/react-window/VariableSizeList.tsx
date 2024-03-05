@@ -130,6 +130,9 @@ const VariableSizeList = createListComponent({
       itemMetadataMap: {}, // 存放每个项目的元数据（offset和size）
     }
     return instanceProps
+  },
+  getOffsetForIndex: (props, index, instanceProps) => {
+    return getItemMetadata(props, index, instanceProps).offset
   }
 })
 

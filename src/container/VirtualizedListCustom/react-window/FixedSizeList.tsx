@@ -9,6 +9,7 @@ const FixedSizeList = createListComponent({
     const numVisibleItems = Math.ceil(height / itemSize)
     return startIndex + numVisibleItems - 1
   }, // 获得结束索引
+  getOffsetForIndex: ({ itemSize }, index) => index * itemSize,
 })
 
 export default FixedSizeList

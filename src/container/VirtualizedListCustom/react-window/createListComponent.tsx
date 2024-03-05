@@ -40,9 +40,11 @@ export default function createListComponent({
   getItemOffset,
   getStartIndexForOffset,
   getStopIndexForStartIndex,
-  initInstanceProps
+  initInstanceProps,
+  getOffsetForIndex
 }) {
   return class extends React.Component {
+    outerRef = React.createRef()
     itemStyleCache = new Map()
     instanceProps = initInstanceProps &&initInstanceProps(this.props)
     static defaultProps = {
@@ -53,6 +55,23 @@ export default function createListComponent({
       scrollOffset: 0,
       isScrolling: false
     }
+
+    scrollTo = (scrollOffset) => {
+      this.outerRef.current.scrollTo(0, scrollOffset)
+    }
+
+    scrollToItem = (index) => {
+      const { itemCount } = this.props;
+      index = Math.max(0, Math.min(index, itemCount - 1));
+      this.scrollTo(getOffsetForIndex(this.props, index, this.instanceProps))
+    }
+
+    componentDidUpdate(prevProps: Readonly<{}>, prevState: Readonly<{}>, snapshot?: any): void {
+      const {scrollOffset} = this.state;
+      this.outerRef.current.scrollTop = scrollOffset;
+    }
+
+
 
     onSizeChange = (index, node) => {
       const height = node.offsetHeight;
@@ -100,7 +119,7 @@ export default function createListComponent({
       }
 
       return (
-        <div style={containerStyle} onScroll={this.onScroll}>
+        <div style={containerStyle} onScroll={this.onScroll} ref={this.outerRef}>
           <div style={contentStyle}>
             {items}
           </div>

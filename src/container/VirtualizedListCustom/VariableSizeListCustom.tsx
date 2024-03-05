@@ -1,3 +1,4 @@
+import React from 'react';
 import { VariableSizeList } from './react-window';
 import './VariableSizeListCustom.css';
 
@@ -12,16 +13,22 @@ const Row = ({ index, style }) => (
 );
 
 const VariableSizeListCustom = () => {
+  const listRef = React.useRef(null);
+
   return (
+    <>
+    <button onClick={() => listRef.current.scrollToItem(500)}>Scroll to item 500</button>
     <VariableSizeList
       className="List"
       height={200}
       width={200}
       itemCount={1000}
       itemSize={getItemSize}
+      ref={listRef}
     >
       {Row}
     </VariableSizeList>
+    </>
   )
 }
 
