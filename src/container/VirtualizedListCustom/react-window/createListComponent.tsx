@@ -1,4 +1,6 @@
 import React from 'react';
+import { requestTimeout, cancelTimeout } from './timer'
+const IS_SCROLLING_DEBOUNCE_INTERVAL = 150;
 
 class ListItem extends React.Component {
   constructor(props) {
@@ -44,10 +46,12 @@ export default function createListComponent({
     itemStyleCache = new Map()
     instanceProps = initInstanceProps &&initInstanceProps(this.props)
     static defaultProps = {
-      overScanCount: 2
+      overScanCount: 2,
+      useIsScrolling: false
     }
     state = {
       scrollOffset: 0,
+      isScrolling: false
     }
 
     onSizeChange = (index, node) => {
@@ -65,7 +69,8 @@ export default function createListComponent({
       this.forceUpdate();
     }
     render() {
-      const { width, height, itemCount, children: ComponentType, isDynamic } = this.props;
+      const { width, height, itemCount, children: ComponentType, isDynamic, useIsScrolling } = this.props;
+      const { isScrolling } = this.state;
       const containerStyle = { position: 'relative', width, height, overflow: 'auto', willChange: 'transform' };
       const contentStyle = {
         height: getEstimatedTotalSize(this.props, this.instanceProps),
@@ -83,11 +88,12 @@ export default function createListComponent({
                 style={this._getItemStyle(index)}
                 onSizeChange={this.onSizeChange}
                 ComponentType={ComponentType}
+                isScrolling={useIsScrolling ? isScrolling : undefined}
               />
             )
           } else {
             items.push(
-              <ComponentType key={index} index={index} style={this._getItemStyle(index)}/>
+              <ComponentType key={index} index={index} style={this._getItemStyle(index)} isScrolling={useIsScrolling ? isScrolling : undefined}/>
             )
           }
         }
@@ -105,7 +111,22 @@ export default function createListComponent({
     onScroll = (event) => {
       const { scrollTop } = event.target;
       this.setState({
-        scrollOffset: scrollTop
+        scrollOffset: scrollTop,
+        isScrolling: true
+      }, this._resetIsScrollingDebounced)
+    }
+
+    _resetIsScrollingDebounced = () => {
+      if(this._resetIsScrollingTimeoutId) {
+        cancelTimeout(this._resetIsScrollingTimeoutId)
+      }
+      this._resetIsScrollingTimeoutId = requestTimeout(this._resetIsScrolling, IS_SCROLLING_DEBOUNCE_INTERVAL)
+    }
+
+    _resetIsScrolling = () => {
+      this._resetIsScrollingTimeoutId = null
+      this.setState({
+        isScrolling: false
       })
     }
 

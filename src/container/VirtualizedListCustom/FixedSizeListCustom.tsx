@@ -1,8 +1,10 @@
 import { FixedSizeList } from './react-window';
 import './FixedSizeListCustom.css';
-const Row = ({ index, style }) => (
+const Row = ({ index, style, isScrolling }) => (
   <div className={index % 2 ? 'ListItemOdd' : 'ListItemEven' } style={style}>
-    Row {index}
+    {
+      isScrolling ? 'Scrolling' : `Row ${index}`
+    }
   </div>
 );
 const FixedSizeListCustom = () => {
@@ -13,6 +15,7 @@ const FixedSizeListCustom = () => {
       width={200}
       itemCount={1000}
       itemSize={50}
+      useIsScrolling
     >
       {Row}
     </FixedSizeList>
