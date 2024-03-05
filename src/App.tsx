@@ -8,7 +8,7 @@ import { VirtualizedGrid } from './container/VirtualizedGrid'
 import { VirtualizedTree } from './container/VirtualizedTree'
 import { ReactCloneElement } from './container/refDemo/ReactCloneElement'
 import { ScrollBar } from './container/ScrollBar'
-import { FixedSizeListCustom, VariableSizeListCustom } from './container/VirtualizedListCustom'
+import { FixedSizeListCustom, VariableSizeListCustom, DynamicSizeListCustom } from './container/VirtualizedListCustom'
 import './App.css'
 import {
   BrowserRouter,
@@ -41,6 +41,7 @@ function App() {
         <Route path="/scroll-bar" element={<ScrollBar />} />
         <Route path="/fixed-size-list-custom" element={<FixedSizeListCustom />} />
         <Route path="/variable-size-list-custom" element={<VariableSizeListCustom />} />
+        <Route path="/dynamic-size-list-custom" element={<DynamicSizeListCustom />} />
       </Routes>
     </BrowserRouter>
   )
@@ -73,6 +74,8 @@ export const Home = () => {
       <Link to="/fixed-size-list-custom">Fixed Size List Custom</Link>
       <br />
       <Link to="/variable-size-list-custom">Variable Size List Custom</Link>
+      <br />
+      <Link to="/dynamic-size-list-custom">Dynamic Size List Custom</Link>
     </div>
   )
 }

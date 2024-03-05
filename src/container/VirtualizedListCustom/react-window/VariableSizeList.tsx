@@ -94,7 +94,7 @@ function getItemMetadata(props, index, instanceProps) {
     // 计算最后测量的索引到当前索引的offset和size
     // 理论上来说，这里的循环只会执行一次，但是为了保险起见，还是用循环
     for (let i = lastMeasuredIndex + 1; i <= index; i++) {
-      let size = itemSize(i);
+      let size = itemSize ? itemSize(i) : DEFAULT_ESTIMATED_ITEM_SIZE;
       itemMetadataMap[i] = { offset, size };
       offset += size;
     }
