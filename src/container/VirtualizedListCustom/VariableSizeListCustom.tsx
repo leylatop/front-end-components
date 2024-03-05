@@ -1,4 +1,3 @@
-import React from 'react';
 import { VariableSizeList } from './react-window';
 import './VariableSizeListCustom.css';
 
@@ -6,12 +5,10 @@ const rowSizes = new Array(1000).fill(true).map(() => 25 + Math.round(Math.rando
 
 const getItemSize = index => rowSizes[index]
 
-const Row = React.memo(
-  ({ index, style, forwardRef }) => (
-    <div className={index % 2 ? 'ListItemOdd' : 'ListItemEven' } style={style} ref={forwardRef}>
-      Row {index}
-    </div>
-  )
+const Row = ({ index, style }) => (
+  <div className={index % 2 ? 'ListItemOdd' : 'ListItemEven' } style={style}>
+    Row {index}
+  </div>
 );
 
 const VariableSizeListCustom = () => {

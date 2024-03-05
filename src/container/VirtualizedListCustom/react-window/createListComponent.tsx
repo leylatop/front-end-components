@@ -9,65 +9,33 @@ export default function createListComponent({
   initInstanceProps
 }) {
   return class extends React.Component {
+    itemStyleCache = new Map()
+    instanceProps = initInstanceProps &&initInstanceProps(this.props)
     static defaultProps = {
       overScanCount: 2
     }
-
-    constructor(props) {
-      super(props);
-      this.instanceProps = initInstanceProps && initInstanceProps(this.props)
-      this.state = { scrollOffset: 0 }
-      this.outerRef = React.createRef()
-      this.oldFirstRef = React.createRef()
-      this.oldLastRef = React.createRef()
-      this.firstRef = React.createRef()
-      this.lastRef = React.createRef()
-      this.itemStyleCache = new Map()
-    }
-
-    componentDidMount() {
-      this.observe(this.oldFirstRef.current = this.firstRef.current);
-      this.observe(this.oldLastRef.current = this.lastRef.current);
-    }
-    componentDidUpdate(prevProps: Readonly<{}>, prevState: Readonly<{}>, snapshot?: any): void {
-      if (this.oldFirstRef.current !== this.firstRef.current) {
-        this.oldFirstRef.current = this.firstRef.current;
-        this.observe(this.firstRef.current);
-      }
-      if (this.oldLastRef.current !== this.lastRef.current) {
-        this.oldLastRef.current = this.lastRef.current;
-        this.observe(this.lastRef.current);
-      }
-    }
-    observe = (dom) => {
-      let io = new IntersectionObserver((entries) => {
-        entries.forEach(this.onScroll);
-      }, { root: this.outerRef.current })
-      io.observe(dom);
+    state = {
+      scrollOffset: 0,
     }
     render() {
-      const { width, height, children: Row } = this.props;
+      const { width, height, itemCount, children: ComponentType} = this.props;
       const containerStyle = { position: 'relative', width, height, overflow: 'auto', willChange: 'transform' };
       const contentStyle = {
-        width: '100%',
-        height: getEstimatedTotalSize(this.props, this.instanceProps)
+        height: getEstimatedTotalSize(this.props, this.instanceProps),
+        width: '100%'
       }
       const items = [];
-      const [startIndex, stopIndex, originStartIndex, originStopIndex] = this._getRangeToRender()
-      for (let index = startIndex; index <= stopIndex; index++) {
-        const style = this._getItemStyle(index)
-        if (index === originStartIndex) {
-          items.push(<Row key={index} index={index} style={style} forwardRef={this.firstRef} />)
-          continue;
-        } else if (index === originStopIndex) {
-          items.push(<Row key={index} index={index} style={style} forwardRef={this.lastRef} />)
-          continue;
+      if(itemCount > 0) {
+        const [startIndex, stopIndex] = this._getRangeToRender()
+        for(let index = startIndex; index <= stopIndex; index++) {
+          items.push(
+            <ComponentType key={index} index={index} style={this._getItemStyle(index)}/>
+          )
         }
-        items.push(<Row key={index} index={index} style={style} />)
       }
 
       return (
-        <div style={containerStyle} ref={this.outerRef}>
+        <div style={containerStyle} onScroll={this.onScroll}>
           <div style={contentStyle}>
             {items}
           </div>
@@ -75,16 +43,16 @@ export default function createListComponent({
       )
     }
 
-    onScroll = () => {
-      const { scrollTop } = this.outerRef.current;
+    onScroll = (event) => {
+      const { scrollTop } = event.target;
       this.setState({
         scrollOffset: scrollTop
       })
     }
 
-    _getItemStyle = (index) => {
+    _getItemStyle=(index) => {
       let style
-      if (this.itemStyleCache.has(index)) {
+      if(this.itemStyleCache.has(index)) {
         style = this.itemStyleCache.get(index)
       } else {
         style = {
@@ -99,14 +67,15 @@ export default function createListComponent({
     }
 
     _getRangeToRender = () => {
-      const { scrollOffset } = this.state;
-      const { itemCount, overScanCount } = this.props;
+      const {scrollOffset} = this.state;
+      const {itemCount, overScanCount} = this.props;
       const startIndex = getStartIndexForOffset(this.props, scrollOffset, this.instanceProps);
       const stopIndex = getStopIndexForStartIndex(this.props, startIndex, scrollOffset, this.instanceProps);
       return [
         Math.max(0, startIndex - overScanCount),
-        Math.min(itemCount - 1, stopIndex + overScanCount),
-        startIndex, stopIndex]
+        Math.min(itemCount - 1, stopIndex + overScanCount)
+      ]
+      // return [startIndex, stopIndex];
     }
   }
 }
