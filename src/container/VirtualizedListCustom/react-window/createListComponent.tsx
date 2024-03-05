@@ -29,12 +29,19 @@ export default function createListComponent({
       }
 
       return (
-        <div style={containerStyle}>
+        <div style={containerStyle} onScroll={this.onScroll}>
           <div style={contentStyle}>
             {items}
           </div>
         </div>
       )
+    }
+
+    onScroll = (event) => {
+      const { scrollTop } = event.target;
+      this.setState({
+        scrollOffset: scrollTop
+      })
     }
 
     _getItemStyle=(index) => {
