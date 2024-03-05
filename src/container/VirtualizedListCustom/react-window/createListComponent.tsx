@@ -20,7 +20,7 @@ export default function createListComponent({
       const { width, height, itemCount, children: ComponentType} = this.props;
       const containerStyle = { position: 'relative', width, height, overflow: 'auto', willChange: 'transform' };
       const contentStyle = {
-        height: getEstimatedTotalSize(this.props),
+        height: getEstimatedTotalSize(this.props, this.instanceProps),
         width: '100%'
       }
       const items = [];

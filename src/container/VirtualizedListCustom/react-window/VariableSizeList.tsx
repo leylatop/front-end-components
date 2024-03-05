@@ -1,7 +1,11 @@
 import createListComponent from './createListComponent'
 
 const DEFAULT_ESTIMATED_ITEM_SIZE = 50
-const getEstimatedTotalSize = () => {}
+const getEstimatedTotalSize = ({ itemCount }, { estimatedItemSize }) => {
+  const numUnmeasuredItems = itemCount; // 未测量的项目数
+  const totalSizeOfUnmeasuredItems = numUnmeasuredItems * estimatedItemSize; // 未测量项目的总大小
+  return totalSizeOfUnmeasuredItems
+}
 
 const VariableSizeList = createListComponent({
   getEstimatedTotalSize,
