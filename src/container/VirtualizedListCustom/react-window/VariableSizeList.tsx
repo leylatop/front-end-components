@@ -23,16 +23,59 @@ const getEstimatedTotalSize = ({ itemCount }, { estimatedItemSize, lastMeasuredI
 
 // 根据偏移量找到最接近的项目
 function findNearestItem(props, instanceProps, offset) {
-  const { lastMeasuredIndex } = instanceProps;
+
+  const { itemMetadataMap, lastMeasuredIndex } = instanceProps;
+  const lastMeasuredItemOffset = lastMeasuredIndex >= 0 ? itemMetadataMap[lastMeasuredIndex].offset : 0; 
+  if(lastMeasuredItemOffset >= offset) {
+    return findNearestItemBinarySearch(props, instanceProps, lastMeasuredIndex, 0, offset)
+  } else {
+    return findNearestItemExponentialSearch(props, instanceProps, Math.max(0, lastMeasuredIndex), offset)
+  }
+
+  
+
   // 在已测量的项目中找到最接近的项目
-  for (let index = 0; index <= lastMeasuredIndex; index++) {
-    const currentOffset = getItemMetadata(props, index, instanceProps).offset;
-    if (currentOffset >= offset) {
-      return index;
+  // 源码中使用了二分查找，把时间复杂度从N=>logN
+  // for (let index = 0; index <= lastMeasuredIndex; index++) {
+  //   const currentOffset = getItemMetadata(props, index, instanceProps).offset;
+  //   if (currentOffset >= offset) {
+  //     return index;
+  //   }
+  // }
+  // return 0;
+}
+
+// 指数查找
+function findNearestItemExponentialSearch(props, instanceProps, index, offset) {
+  const { itemCount} = props
+  let interval = 1
+  while(index < itemCount && getItemMetadata(props, index, instanceProps).offset < offset) {
+    index += interval
+    interval *= 2
+  }
+  return findNearestItemBinarySearch(props, instanceProps, Math.min(index, itemCount - 1), Math.floor(index / 2), offset)
+}
+
+// 二分查找
+function findNearestItemBinarySearch(props, instanceProps, high, low, offset) {
+  while(low <= high) {
+    const middle = low + Math.floor((high - low) / 2)
+    const currentOffset = getItemMetadata(props, middle, instanceProps).offset
+    if(currentOffset === offset) {
+      return middle
+    } else if(currentOffset < offset) {
+      low = middle + 1
+    } else if(currentOffset > offset) {
+      high = middle - 1
     }
   }
-  return 0;
+  if(low > 0) {
+    return low - 1
+  } else {
+    return 0
+  }
 }
+
 
 // 获取项目的元数据，并更新最后测量的索引
 function getItemMetadata(props, index, instanceProps) {
