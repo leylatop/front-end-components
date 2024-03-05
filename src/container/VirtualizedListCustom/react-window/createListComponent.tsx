@@ -9,6 +9,7 @@ export default function createListComponent({
   initInstanceProps
 }) {
   return class extends React.Component {
+    itemStyleCache = new Map()
     instanceProps = initInstanceProps &&initInstanceProps(this.props)
     static defaultProps = {
       overScanCount: 2
@@ -50,11 +51,17 @@ export default function createListComponent({
     }
 
     _getItemStyle=(index) => {
-      const style = {
-        position: 'absolute',
-        width: '100%',
-        height: getItemSize(this.props, index, this.instanceProps),
-        top: getItemOffset(this.props, index, this.instanceProps)
+      let style
+      if(this.itemStyleCache.has(index)) {
+        style = this.itemStyleCache.get(index)
+      } else {
+        style = {
+          position: 'absolute',
+          width: '100%',
+          height: getItemSize(this.props, index, this.instanceProps),
+          top: getItemOffset(this.props, index, this.instanceProps)
+        }
+        this.itemStyleCache.set(index, style)
       }
       return style
     }
