@@ -1,288 +1,284 @@
-import React, { MouseEvent, useEffect } from 'react'
+import React, { MouseEvent, useCallback, useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 export const BAR_MAP = {
-  vertical: {
-    offset: 'offsetHeight',
-    scroll: 'scrollTop',
+  vertical: { // 垂直滚动条
+    offsetSize: 'offsetHeight',
+    scrollPosition: 'scrollTop',
     scrollSize: 'scrollHeight',
+    clientSize: 'clientHeight',
+    scrollDirection: 'scrollY',
     size: 'height',
-    key: 'vertical',
-    axis: 'Y',
     client: 'clientY',
-    direction: 'top'
+    direction: 'top',
+    page: 'pageY',
+    barClassName: 'bar-vertical',
+    thumbClassName: 'thumb-vertical'
   },
-  horizontal: {
-    offset: 'offsetWidth',
-    scroll: 'scrollLeft',
+  horizontal: { // 水平滚动条
+    offsetSize: 'offsetWidth',
+    scrollPosition: 'scrollLeft',
     scrollSize: 'scrollWidth',
+    clientSize: 'clientWidth',
+    scrollDirection: 'scrollX',
     size: 'width',
-    key: 'horizontal',
-    axis: 'X',
     client: 'clientX',
-    direction: 'left'
+    direction: 'left',
+    page: 'pageX',
+    barClassName: 'bar-horizontal',
+    thumbClassName: 'thumb-horizontal'
   }
 } as const
 
+type Props = {
+  isAutoHideBar: boolean
+  className?: string
+  scrollContainerClassName?: string
+  children: React.ReactNode
+}
 
-export const ScrollBar2 = (props) => {
+export const ScrollBar2 = (props: Props) => {
   const { children, isAutoHideBar, className = '', scrollContainerClassName = '' } = props
   const containerRef = React.useRef<HTMLDivElement>(null)
-  const barRef = React.useRef<HTMLDivElement>(null)
-  const barHorizontalRef = React.useRef<HTMLDivElement>(null)
-  const contentRef = React.useRef<HTMLDivElement>(null)
-
-  const thumbRef = React.useRef<HTMLDivElement>(null)
-  const thumbHorizontalRef = React.useRef<HTMLDivElement>(null)
-
-  const isDragging = React.useRef(false)
-  const thumbSizeRef = React.useRef(0)
-  const thumbHorizontalSizeRef = React.useRef(0)
-
-  const ratioRef = React.useRef(1)
-  const ratioHorizontalRef = React.useRef(1)
-
-  const [scrollThumbHeight, setScrollThumbHeight] = React.useState(0)
-  const [scrollThumbHorizontalWidth, setScrollThumbHorizontalWidth] = React.useState(0)
-
-  const [scrollThumbTop, setScrollThumbTop] = React.useState(0)
-  const [scrollThumbLeft, setScrollThumbLeft] = React.useState(0)
-
-  const [scrollBarOpacity, setScrollBarOpacity] = React.useState<number>(0)
-  const [isShowVerticalBar, setIsShowVerticalBar] = React.useState<boolean>(false)
-  const [isShowHorizontalBar, setIsShowHorizontalBar] = React.useState<boolean>(false)
-
-  // 计算滑块的位置
-  const calcThumbTop = (thumbHeight: number) => {
-    const { scrollTop } = containerRef.current!
-    const barHeight = barRef.current!.clientHeight
-    let thumbTop = scrollTop * ratioRef.current
-    // 处理 thumbTop 的边界值，不能超过滚动条的最大高度，不能小于0
-    thumbTop = Math.max(thumbTop, 0)
-    thumbTop = Math.min(thumbTop, barHeight - thumbHeight)
-    return thumbTop
-  }
-
-
-  // 计算水平滑块的位置
-  const calcThumbLeft = (thumbWidth: number) => {
-    const { scrollLeft } = containerRef.current!
-    const barWidth = barHorizontalRef.current!.clientWidth
-    let thumbLeft = scrollLeft * ratioHorizontalRef.current
-    // 处理 thumbTop 的边界值，不能超过滚动条的最大高度，不能小于0
-    thumbLeft = Math.max(thumbLeft, 0)
-    thumbLeft = Math.min(thumbLeft, barWidth - thumbWidth)
-    return thumbLeft
-  }
-
-
-
-  // 更新滑块的位置
-  const updateThumbTop = () => {
-    const thumbTop = calcThumbTop(thumbSizeRef.current)
-    setScrollThumbTop(thumbTop)
-  }
-
-  // 更新水平滑块的位置
-  const updateThumbLeft = () => {
-    const thumbLeft = calcThumbLeft(thumbHorizontalSizeRef.current)
-    setScrollThumbLeft(thumbLeft)
-  }
-
-
-  // 更新滑块的大小和比例
-  const updateSizeAndRatio = () => {
-    const { clientHeight: visibleHeight, scrollHeight } = containerRef.current!
-    const barHeight = barRef.current!.clientHeight
-    // size 是滑块的高度
-    const size = visibleHeight / scrollHeight * barHeight
-    // ratio 是滑块的高度和滚动内容的高度的比值
-    const ratio = (barHeight - size) / (scrollHeight - visibleHeight)
-    // 使用ref保存thumbSize，防止在 updateThumbTop 函数中使用的 thumbSize 是旧值
-    thumbSizeRef.current = size
-    ratioRef.current = ratio
-    setScrollThumbHeight(size)
-  }
-
-  // 更新水平滑块的大小和比例
-  const updateHorizontalSizeAndRatio = () => {
-    const { clientWidth: visibleWidth, scrollWidth } = containerRef.current!
-    const barWidth = barHorizontalRef.current!.clientWidth
-    // size 是滑块的宽度
-    const size = visibleWidth / scrollWidth * barWidth
-
-    // ratio 是滑块的高度和滚动内容的高度的比值
-    const ratio = (barWidth - size) / (scrollWidth - visibleWidth)
-    // 使用ref保存thumbSize，防止在 updateThumbLeft 函数中使用的 thumbSize 是旧值
-    thumbHorizontalSizeRef.current = size
-    ratioHorizontalRef.current = ratio
-    setScrollThumbHorizontalWidth(size)
-  }
-
-  // 滑块的拖拽事件处理函数
-  const handleThumbMouseDown: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    e.preventDefault()
-    if (!thumbRef.current || !containerRef.current) return
-    const lastedPageY = e.pageY
-    const lastedScrollTop = containerRef.current.scrollTop * ratioRef.current
-    let scrollTop
-    const mouseMoveHandler = (e: { pageY: number }) => {
-      isDragging.current = true
-      const moveDelta = e.pageY - lastedPageY
-      const sliderTop = lastedScrollTop + moveDelta
-      scrollTop = sliderTop / ratioRef.current
-      containerRef.current!.scrollTop = scrollTop
-      updateThumbTop()
-    }
-
-    document.addEventListener('mousemove', mouseMoveHandler)
-
-    document.addEventListener('mouseup', () => {
-      if (isDragging.current) {
-        isDragging.current = false
-      }
-      document.removeEventListener('mousemove', mouseMoveHandler)
-    })
-  }
-
-  // 水平滑块的拖拽事件处理函数
-  const handleBarHorizontalThumbMouseDown: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    e.preventDefault()
-    if (!thumbHorizontalRef.current || !containerRef.current) return
-    const lastedPageX = e.pageX
-    const lastedScrollLeft = containerRef.current.scrollLeft * ratioHorizontalRef.current
-    let scrollLeft
-    const mouseMoveHandler = (e: { pageX: number }) => {
-      isDragging.current = true
-      const moveDelta = e.pageX - lastedPageX
-      const sliderLeft = lastedScrollLeft + moveDelta
-      scrollLeft = sliderLeft / ratioHorizontalRef.current
-      containerRef.current!.scrollLeft = scrollLeft
-      updateThumbLeft()
-    }
-
-    document.addEventListener('mousemove', mouseMoveHandler)
-
-    document.addEventListener('mouseup', () => {
-      if (isDragging.current) {
-        isDragging.current = false
-      }
-      document.removeEventListener('mousemove', mouseMoveHandler)
-    })
-  }
-
-  // 滚动条的点击事件处理函数
-  const handleBarMouseDown: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    if (!barRef.current || !thumbRef.current || !containerRef.current) return
-    if (e.target !== thumbRef.current) {
-      const offsetY = e.pageY - barRef.current.getBoundingClientRect().top - window.scrollY
-      const scrollTop = (offsetY - thumbRef.current.clientHeight / 2) / ratioRef.current
-      containerRef.current.scrollTop = scrollTop
-      updateThumbTop()
-    }
-  }
-
-  // 水平滚动条的点击事件处理函数
-  const handleHorizontalBarMouseDown: React.MouseEventHandler<HTMLDivElement> = (e) => {
-    if (!barHorizontalRef.current || !thumbHorizontalRef.current || !containerRef.current) return
-    if (e.target !== thumbHorizontalRef.current) {
-      const offsetX = e.pageX - barHorizontalRef.current.getBoundingClientRect().left - window.scrollX
-      const scrollLeft = (offsetX - thumbHorizontalRef.current.clientWidth / 2) / ratioHorizontalRef.current
-      containerRef.current.scrollLeft = scrollLeft
-      updateThumbLeft()
-    }
-  }
-
-  // 自动隐藏滚动条
-  const updateBarStatus = (e: MouseEvent) => {
-    if (containerRef.current) {
-      const { left, right, top, bottom } = containerRef.current.getBoundingClientRect();
-      const isInContainer = (e: MouseEvent) => {
-        return e.clientX >= left && e.clientX <= right && e.clientY >= top && e.clientY <= bottom;
-      }
-      if (isInContainer(e)) {
-        setScrollBarOpacity(1)
-
-        // 当鼠标移出页面时，也要隐藏滚动条
-        document.addEventListener('mouseleave', () => {
-          setScrollBarOpacity(0)
-        })
-      } else {
-        // 如果正在拖拽滑块，不隐藏滚动条
-        if (isDragging.current) return
-        setScrollBarOpacity(0)
-      }
-    }
-  }
-
-  useEffect(() => {
-    if (containerRef.current) {
-      const isShowVerticalBar = containerRef.current!.scrollHeight > containerRef.current!.clientHeight
-      const isShowHorizontalBar = containerRef.current!.scrollWidth > containerRef.current!.clientWidth
-      setIsShowVerticalBar(isShowVerticalBar)
-      setIsShowHorizontalBar(isShowHorizontalBar)
-      if (isShowVerticalBar) {
-        updateSizeAndRatio()
-      }
-      if (isShowHorizontalBar) {
-        updateHorizontalSizeAndRatio()
-      }
-
-      if (isAutoHideBar) {
-        document.addEventListener('mousemove', updateBarStatus)
-      }
-      // 监测滚动容器的滚动事件，更新滑块的位置
-      containerRef.current.addEventListener('scroll', updateThumbTop)
-      // 监测滚动容器的大小变化，更新滑块的大小和位置
-      const resizeCallback = () => {
-        updateSizeAndRatio()
-        updateHorizontalSizeAndRatio()
-        updateThumbTop()
-        updateThumbLeft()
-
-      }
-      // 监听窗口大小变化，更新滑块的大小和位置
-      window.addEventListener('resize', resizeCallback)
-      // 监听滚动容器的大小变化，更新滑块的大小和位置
-      const resizeObserver = new ResizeObserver(resizeCallback)
-      resizeObserver.observe(contentRef.current!)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-  const barStyle = {
-    opacity: isShowVerticalBar ? scrollBarOpacity : 0,
-  }
-  const barHorizontalStyle = {
-    opacity: isShowHorizontalBar ? scrollBarOpacity : 0,
-  }
-  const thumbStyle = {
-    height: scrollThumbHeight,
-    top: scrollThumbTop
-  }
-
-  const thumbHorizontalStyle = {
-    width: scrollThumbHorizontalWidth,
-    left: scrollThumbLeft
-  }
-
 
   return (
     <StyledScrollBar2 className={className}>
       <div className={`scroll-container ${scrollContainerClassName}`} ref={containerRef}>
-        <div className="scroll-content" ref={contentRef}>
+        <div className="scroll-content">
           {children}
         </div>
       </div>
-      <div className="bar" ref={barRef} style={barStyle} onMouseDown={handleBarMouseDown}>
-        <div className="thumb" ref={thumbRef} style={thumbStyle} onMouseDown={handleThumbMouseDown}></div>
-      </div>
-      <div className="bar-v" ref={barHorizontalRef} style={barHorizontalStyle} onMouseDown={handleHorizontalBarMouseDown}>
-        <div className="thumb-v" ref={thumbHorizontalRef} style={thumbHorizontalStyle} onMouseDown={handleBarHorizontalThumbMouseDown}></div>
-      </div>
-
+      <Bar
+        type="vertical"
+        containerRef={containerRef}
+        isAutoHideBar={isAutoHideBar}
+      />
+      <Bar
+        type="horizontal"
+        containerRef={containerRef}
+        isAutoHideBar={isAutoHideBar}
+      />
     </StyledScrollBar2>
   )
 }
+
+type BarProps = {
+  type: 'vertical' | 'horizontal',
+  containerRef: React.RefObject<HTMLDivElement>,
+  isAutoHideBar: boolean
+}
+
+export const Bar = React.memo(function Bar (props: BarProps) {
+  const { type, containerRef, isAutoHideBar } = props
+  const barRef = React.useRef<HTMLDivElement>(null)
+  const thumbRef = React.useRef<HTMLDivElement>(null)
+  const thumbSizeRef = React.useRef(0)
+  const [thumbSize, setThumbSize] = useState(0)
+  const [thumbPosition, setThumbPosition] = useState(0)
+
+  const ratioRef = React.useRef(1)
+  const isDragging = React.useRef(false)
+
+  const [barOpacity, setBarOpacity] = useState(isAutoHideBar ? 0 : 1)
+  const [isShowBar, setIsShowBar] = useState(false)
+
+  // 更新滚动条的尺寸和位置
+  const updateScrollGlobal = useCallback(() => {
+    const container = containerRef.current
+    const bar = barRef.current
+    if (!container || !bar) return
+    const visibleArea = container[BAR_MAP[type].clientSize]
+    const scrollSize = container[BAR_MAP[type].scrollSize]
+    const isShowBar = scrollSize > visibleArea
+    /**
+     * 1. size 滑块的尺寸
+     * 2. ratio 是滑块的尺寸和滚动内容的区域的比值
+     * 3. position 滑块的位置
+     */
+    let size, ratio, position
+    if (isShowBar) {
+      const barSize = bar[BAR_MAP[type].clientSize]
+      size = visibleArea / scrollSize * barSize
+      ratio = (barSize - size) / (scrollSize - visibleArea)
+      position = container[BAR_MAP[type].scrollPosition] * ratio
+      // 处理 position 的边界值，不能超过滚动条的最大高度，不能小于0
+      position = Math.max(position, 0)
+      position = Math.min(position, barSize - size)
+    } else {
+      size = 0
+      ratio = 1
+      position = 0
+    }
+
+    // 使用ref保存thumbSize，防止在 updateThumbTop 函数中使用的 thumbSize 是旧值
+    thumbSizeRef.current = size
+    ratioRef.current = ratio
+    setThumbSize(size)
+    setThumbPosition(position)
+    setIsShowBar(isShowBar)
+  }, [containerRef, type])
+
+  // 更新滚动条的位置
+  const updatePosition = useCallback(() => {
+    const container = containerRef.current
+    const bar = barRef.current
+    const size = thumbSizeRef.current
+    if (!container || !bar) return
+    const barSize = bar[BAR_MAP[type].clientSize]
+    let position = container[BAR_MAP[type].scrollPosition] * ratioRef.current
+    position = Math.max(position, 0)
+    position = Math.min(position, barSize - size)
+    setThumbPosition(position)
+  }, [containerRef, type])
+
+  // 判断鼠标是否在滚动容器内
+  const getMouseIsInContainer = (e: MouseEvent, container) => {
+    const { left, right, top, bottom } = container.getBoundingClientRect()
+    return e.clientX >= left && e.clientX <= right && e.clientY >= top && e.clientY <= bottom
+  }
+
+  // 自动隐藏滚动条逻辑
+  const updateBarStatus = useCallback((e: MouseEvent) => {
+    const container = containerRef.current
+    if (!container) return
+    const mouseIsInContainer = getMouseIsInContainer(e, container)
+    if (mouseIsInContainer) {
+      setBarOpacity(1)
+      // 当鼠标移出页面时，也要隐藏滚动条
+      document.addEventListener('mouseleave', () => {
+        setBarOpacity(0)
+      })
+    } else {
+      // 如果正在拖拽滑块，不隐藏滚动条
+      if (isDragging.current) return
+      setBarOpacity(0)
+    }
+  }, [containerRef, isDragging])
+
+  useEffect(() => {
+    const container = containerRef.current // 保存当前的ref值
+    const children = container?.children
+    updateScrollGlobal() // 初始化滚动条所有信息
+
+    const resizeObserver = new ResizeObserver(() => {
+      // 尺寸发生变化时，重新计算滚动条所有信息
+      updateScrollGlobal()
+    })
+    if (container) {
+      // 监听鼠标移动事件，自动隐藏滚动条
+      // @ts-ignore
+      if (isAutoHideBar) document.addEventListener('mousemove', updateBarStatus)
+      // 监听滚动容器的滚动事件，只需更新滑块的位置
+      container.addEventListener('scroll', updatePosition)
+      // 同时监听滚动容器和滚动内容的大小变化，更新滑块的大小和位置
+      resizeObserver.observe(container)
+    }
+    if (children) {
+      resizeObserver.observe(children[0] as HTMLElement)
+    }
+
+    return () => {
+      resizeObserver.disconnect()
+      if (container) {
+        container.removeEventListener('scroll', updatePosition)
+      }
+      // @ts-ignore
+      if (isAutoHideBar) document.removeEventListener('mousemove', updateBarStatus)
+    }
+  }, [containerRef, isAutoHideBar, type, updateBarStatus, updatePosition, updateScrollGlobal])
+
+  // 滑块的拖拽事件处理函数
+  const handleThumbMouseDown = useCallback((e) => {
+    e.preventDefault()
+    if (!thumbRef.current || !containerRef.current) return
+    const lastedPagePosition = e[BAR_MAP[type].page]
+    const lastedScrollPosition = containerRef.current[BAR_MAP[type].scrollPosition] * ratioRef.current
+    let scrollPosition
+    const mouseMoveHandler = (e) => {
+      isDragging.current = true
+      const moveDelta = e[BAR_MAP[type].page] - lastedPagePosition
+      const sliderPosition = lastedScrollPosition + moveDelta
+      scrollPosition = sliderPosition / ratioRef.current
+      containerRef.current[BAR_MAP[type].scrollPosition] = scrollPosition
+      updatePosition()
+    }
+
+    document.addEventListener('mousemove', mouseMoveHandler)
+
+    document.addEventListener('mouseup', () => {
+      if (isDragging.current) {
+        isDragging.current = false
+      }
+      document.removeEventListener('mousemove', mouseMoveHandler)
+    })
+  }, [containerRef, type, updatePosition])
+
+  // 滚动条的点击事件处理函数
+  const handleBarMouseDown = useCallback((e) => {
+    e.preventDefault()
+    if (!barRef.current || !thumbRef.current || !containerRef.current) return
+    if (e.target !== thumbRef.current) {
+      const offset = e[BAR_MAP[type].page] - barRef.current.getBoundingClientRect()[BAR_MAP[type].direction] - window[BAR_MAP[type].scrollDirection]
+      const scrollPosition = (offset - thumbRef.current[BAR_MAP[type].clientSize] / 2) / ratioRef.current
+      containerRef.current[BAR_MAP[type].scrollPosition] = scrollPosition
+      updatePosition()
+    }
+  }, [containerRef, type, updatePosition])
+
+  const barStyle = {
+    opacity: isShowBar ? barOpacity : 0
+  }
+
+  const thumbStyle = {
+    [BAR_MAP[type].direction]: thumbPosition,
+    [BAR_MAP[type].size]: thumbSize
+  }
+
+  const barClassName = BAR_MAP[type].barClassName
+  const thumbClassName = BAR_MAP[type].thumbClassName
+  return (
+    <StyledScrollBar className={barClassName} ref={barRef} style={barStyle} onMouseDown={handleBarMouseDown}>
+      <StyledThumb className={thumbClassName} ref={thumbRef} style={thumbStyle} onMouseDown={handleThumbMouseDown} />
+    </StyledScrollBar>
+  )
+})
+
+const StyledScrollBar = styled.div`
+  position: absolute;
+
+  &.bar-vertical {
+    right: 0;
+    top: 0;
+    width: 10px;
+    height: 100%;
+  }
+
+  &.bar-horizontal {
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 10px;
+  }
+`
+
+const StyledThumb = styled.div`
+  position: absolute;
+  transition: 0.3s background-color;
+  background-color: red;
+  border-radius: 4px;
+
+  &.thumb-vertical {
+    top: 0;
+    right: 0;
+    width: 6px;
+  }
+
+  &.thumb-horizontal {
+    bottom: 0;
+    left: 0;
+    height: 6px;
+  }
+`
 
 const StyledScrollBar2 = styled.div`
   position: relative;
@@ -292,50 +288,5 @@ const StyledScrollBar2 = styled.div`
     max-width: 100%;
     overflow: auto;
     scrollbar-width: none;
-    background-color: aqua;
-  }
-
-  .bar {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 10px;
-    height: 100%;
-  }
-
-  .bar-v {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 10px;
-  }
-
-  .thumb {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 6px;
-    border-radius: 10px;
-    transition: 0.3s background-color;
-    background-color: #888;
-
-    &:hover {
-      background-color: #555;
-    }
-  }
-
-  .thumb-v {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 6px;
-    border-radius: 10px;
-    transition: 0.3s background-color;
-    background-color: #888;
-
-    &:hover {
-      background-color: #555;
-    }
   }
 `
