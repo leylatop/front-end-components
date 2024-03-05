@@ -5,7 +5,7 @@ const Row = ({ index, style }) => (
     Row {index}
   </div>
 );
-const List = () => {
+const FixedSizeListCustom = () => {
   return (
     <FixedSizeList
       className="List"
@@ -20,5 +20,5 @@ const List = () => {
 }
 
 export {
-  List as VirtualizedListCustom
+  FixedSizeListCustom
 }

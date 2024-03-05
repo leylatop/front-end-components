@@ -8,7 +8,7 @@ import { VirtualizedGrid } from './container/VirtualizedGrid'
 import { VirtualizedTree } from './container/VirtualizedTree'
 import { ReactCloneElement } from './container/refDemo/ReactCloneElement'
 import { ScrollBar } from './container/ScrollBar'
-import { VirtualizedListCustom } from './container/VirtualizedListCustom'
+import { FixedSizeListCustom } from './container/VirtualizedListCustom'
 import './App.css'
 import {
   BrowserRouter,
@@ -39,7 +39,7 @@ function App() {
         <Route path="/virtualized-tree" element={<VirtualizedTree />} />
         <Route path="/react-clone-element" element={<ReactCloneElement />} />
         <Route path="/scroll-bar" element={<ScrollBar />} />
-        <Route path="/virtualized-list-custom" element={<VirtualizedListCustom />} />
+        <Route path="/virtualized-list-custom" element={<FixedSizeListCustom />} />
       </Routes>
     </BrowserRouter>
   )
