@@ -17,67 +17,62 @@ import {
   Link,
 } from "react-router-dom";
 
+const routers = [
+  { path: '/todo-list', name: 'Todo List', component: TodoListContainer },
+  { path: '/toast', name: 'Toast', component: ToastContainer },
+  { path: '/tooltip', name: 'Tooltip', component: TooltipContainer },
+  { path: '/list', name: 'List', component: ListContainer },
+  { path: '/ref', name: 'Ref', component: RefDemo },
+  { path: '/func-child-class-parent', name: 'Func Child Class Parent', component: FuncChildClassParent },
+  { path: '/func-child-func-parent', name: 'Func Child Func Parent', component: FuncChildFuncParent },
+  { path: '/class-child-class-parent', name: 'Class Child Class Parent', component: ClassChildClassParent },
+  { path: '/class-child-func-parent', name: 'Class Child Func Parent', component: ClassChildFuncParent },
+  { path: '/func-child-ref-callback-parent', name: 'Func Child Ref Callback Parent', component: FuncChildRefCallbackParent },
+  { path: '/class-child-ref-callback-parent', name: 'Class Child Ref Callback Parent', component: ClassChildRefCallbackParent },
+  { path: '/virtualized-list', name: 'Virtualized List', component: VirtualizedList },
+  { path: '/virtualized-grid', name: 'Virtualized Grid', component: VirtualizedGrid },
+  { path: '/virtualized-tree', name: 'Virtualized Tree', component: VirtualizedTree },
+  { path: '/react-clone-element', name: 'React Clone Element', component: ReactCloneElement },
+  { path: '/scroll-bar', name: 'Scroll Bar', component: ScrollBar },
+  { path: '/fixed-size-list-custom', name: 'Fixed Size List Custom', component: FixedSizeListCustom },
+  { path: '/variable-size-list-custom', name: 'Variable Size List Custom', component: VariableSizeListCustom },
+  { path: '/dynamic-size-list-custom', name: 'Dynamic Size List Custom', component: DynamicSizeListCustom },
+]
+
+export const Home = () => {
+  return (
+    <div style={{ margin: '0 auto'}}>
+      <h1>Home</h1>
+      {
+        routers.map((router, index) => {
+          return (
+            <div key={index}>
+              <Link to={router.path}>{router.name}</Link>
+              <br />
+            </div>
+          )
+        })
+      }
+    </div>
+  )
+}
+
+
 
 function App() {
   return (
     <BrowserRouter basename='/'>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/todo-list" element={<TodoListContainer />} />
-        <Route path="/toast" element={<ToastContainer />} />
-        <Route path="/tooltip" element={<TooltipContainer />} />
-        <Route path="/list" element={<ListContainer />} />
-        <Route path="/ref" element={<RefDemo />} />
-        <Route path="/func-child-class-parent" element={<FuncChildClassParent />} />
-        <Route path="/func-child-func-parent" element={<FuncChildFuncParent />} />
-        <Route path="/class-child-class-parent" element={<ClassChildClassParent />} />
-        <Route path="/class-child-func-parent" element={<ClassChildFuncParent />} />
-        <Route path="/func-child-ref-callback-parent" element={<FuncChildRefCallbackParent />} />
-        <Route path="/class-child-ref-callback-parent" element={<ClassChildRefCallbackParent />} />
-        <Route path="/virtualized-list" element={<VirtualizedList />} />
-        <Route path="/virtualized-grid" element={<VirtualizedGrid />} />
-        <Route path="/virtualized-tree" element={<VirtualizedTree />} />
-        <Route path="/react-clone-element" element={<ReactCloneElement />} />
-        <Route path="/scroll-bar" element={<ScrollBar />} />
-        <Route path="/fixed-size-list-custom" element={<FixedSizeListCustom />} />
-        <Route path="/variable-size-list-custom" element={<VariableSizeListCustom />} />
-        <Route path="/dynamic-size-list-custom" element={<DynamicSizeListCustom />} />
+        {
+          routers.map((router, index) => {
+            return (
+              <Route key={index} path={router.path} element={<router.component />} />
+            )
+          })
+        }
       </Routes>
     </BrowserRouter>
   )
 }
-
-export const Home = () => {
-  return (
-    <div style={{ margin: '0 auto'}}>
-      <h1>Home</h1>
-      <Link to="/todo-list">Todo List</Link>
-      <br />
-      <Link to="/toast">Toast</Link>
-      <br />
-      <Link to="/tooltip">Tooltip</Link>
-      <br />
-      <Link to="/list">List</Link>
-      <br />
-      <Link to="/ref">Ref</Link>
-      <br />
-      <Link to="/virtualized-list">Virtualized List</Link>
-      <br />
-      <Link to="/virtualized-grid">Virtualized Grid</Link>
-      <br />
-      <Link to="/virtualized-tree">Virtualized Tree</Link>
-      <br />
-      <Link to="/react-clone-element">React Clone Element</Link>
-      <br />
-      <Link to="/scroll-bar">Scroll Bar</Link>
-      <br />
-      <Link to="/fixed-size-list-custom">Fixed Size List Custom</Link>
-      <br />
-      <Link to="/variable-size-list-custom">Variable Size List Custom</Link>
-      <br />
-      <Link to="/dynamic-size-list-custom">Dynamic Size List Custom</Link>
-    </div>
-  )
-}
-
 export default App
