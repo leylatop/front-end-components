@@ -10,6 +10,7 @@ import { ReactCloneElement } from './container/refDemo/ReactCloneElement'
 import { ScrollBar } from './container/ScrollBar'
 import { FixedSizeListCustom, VariableSizeListCustom, DynamicSizeListCustom } from './container/VirtualizedListCustom'
 import { AIComponent } from './container/AIComponent'
+import { SnapShot } from './container/Snapshot'
 import './App.css'
 import {
   BrowserRouter,
@@ -39,6 +40,7 @@ const routers = [
   { path: '/variable-size-list-custom', name: 'Variable Size List Custom', component: VariableSizeListCustom },
   { path: '/dynamic-size-list-custom', name: 'Dynamic Size List Custom', component: DynamicSizeListCustom },
   { path: '/ai-component', name: 'AI Component', component: AIComponent },
+  // { path: '/snapshot', name: 'Snapshot', component: SnapShot },
 ]
 
 export const Home = () => {
