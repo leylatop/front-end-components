@@ -15,6 +15,7 @@ import './utils/storage'
 
 import { HtmlContainer } from './container/HTMLContainer'
 import { InputContainer } from './container/InputContainer'
+import { TextAreaUndoRedo } from './container/TextAreaUndoRedo'
 import './App.css'
 import {
   BrowserRouter,
@@ -46,6 +47,8 @@ const routers = [
   { path: '/ai-component', name: 'AI Component', component: AIComponent },
   { path: '/html-container', name: 'HTML Container', component: HtmlContainer },
   { path: '/input-container', name: 'Input Container', component: InputContainer },
+  { path: '/textarea-undo-redo', name: 'Textarea Undo Redo', component: TextAreaUndoRedo },
+  
   // { path: '/snapshot', name: 'Snapshot', component: SnapShot },
 ]
 
