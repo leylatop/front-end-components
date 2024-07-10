@@ -17,6 +17,7 @@ import { HtmlContainer } from './container/HTMLContainer'
 import { InputContainer } from './container/InputContainer'
 import { TextAreaUndoRedo } from './container/TextAreaUndoRedo'
 import { Foldable } from './container/FoldableImage'
+import { Editable } from './container/Editable'
 
 import './App.css'
 import {
@@ -51,6 +52,7 @@ const routers = [
   { path: '/input-container', name: 'Input Container', component: InputContainer },
   { path: '/textarea-undo-redo', name: 'Textarea Undo Redo', component: TextAreaUndoRedo },
   { path: '/foldable', name: 'Foldable', component: Foldable },
+  { path: '/editable', name: 'Editable', component: Editable },
   
   // { path: '/snapshot', name: 'Snapshot', component: SnapShot },
 ]
