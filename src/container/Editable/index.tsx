@@ -1,80 +1,210 @@
-import React, { useState, useRef, useEffect, CSSProperties } from 'react';
-function Editable() {
-  const [inputValue, setInputValue] = useState('');
-  const refInputMirror = useRef(null);
-  const refInput = useRef(null);
+import React, { CSSProperties, forwardRef, useImperativeHandle } from 'react'
 
-  const [inputComputeStyle, setInputComputeStyle] = useState<CSSProperties>();
-  const getStyleFromInput = (input: HTMLElement): CSSProperties => {
-    if (!input) {
-      return {};
+interface EditableProps {
+  value: string;
+  onSave: (value: string) => void;
+  onCancel: () => void;
+  onEnd?: () => void;
+  className?: string;
+  style?: React.CSSProperties;
+  maxLength?: number;
+  autoWidth: boolean | { minWidth?: CSSProperties['minWidth']; maxWidth?: CSSProperties['maxWidth'] }
+}
+
+const getStyleFromInput = (input: HTMLElement): CSSProperties => {
+  if (!input) {
+    return {}
+  }
+  const computeStyle = window.getComputedStyle(input)
+  const cssKeys = [
+    'fontSize',
+    'fontFamily',
+    'fontWeight',
+    'lineHeight',
+    'letterSpacing',
+    'overflow',
+    'tabSize',
+    'textIndent',
+    'textTransform',
+    'whiteSpace',
+    'wordBreak',
+    'wordSpacing',
+    'boxSizing',
+    'padding',
+    'border'
+  ]
+
+  return cssKeys.reduce((t, n) => {
+    if (Number.isNaN(Number(n)) && n !== 'length') {
+      t[n] = computeStyle[n]
     }
-    const computeStyle = window.getComputedStyle(input);
-  
-    const cssKeys = [
-      'font',
-      'letterSpacing',
-      'overflow',
-      'tabSize',
-      'textIndent',
-      'textTransform',
-      'whiteSpace',
-      'wordBreak',
-      'wordSpacing',
-      'paddingLeft',
-      'paddingRight',
-      'borderLeft',
-      'borderRight',
-      'boxSizing',
-    ];
-  
-    return cssKeys.reduce((t, n) => {
-      t[n] = computeStyle[n];
-      return t;
-    }, {});
-  };
-  
+    return t
+  }, {})
+}
+
+export const Editable: React.FC<EditableProps> = forwardRef(function Editable (props: EditableProps, ref) {
+  const {
+    className,
+    style: propsStyle,
+    value,
+    maxLength,
+    autoWidth: propsAutoWidth = true,
+    onSave,
+    onCancel,
+    onEnd
+  } = props
+  const inputRef = React.useRef(null)
+  const spanRef = React.useRef(null)
+
+  const inComposition = React.useRef(false)
+  const lastKeyCode = React.useRef<number>()
+
+  const [current, setCurrent] = React.useState(value)
+  const [inputComputeStyle, setInputComputeStyle] = React.useState<CSSProperties>({})
+
+  React.useEffect(() => {
+    setCurrent(value)
+  }, [value])
+
   const updateInputWidth = () => {
-    if (refInputMirror.current && refInput.current) {
-      // const width = refInputMirror.current.clientWidth;
-      const {width} = refInputMirror.current.getBoundingClientRect(); // 解决抖动问题，因为clientWidth会四舍五入
-      console.log('width', width);
+    const inputEl = inputRef.current
+    if (!inputEl) return
+    const { width } = spanRef.current.getBoundingClientRect() // need use getBoundingClientRect to get the float width
+    inputEl.style.width = `${width}px`
+  }
 
-      refInput.current.style.width = `${width}px`;
+  React.useEffect(() => {
+    if (!inputRef.current) return
+    const inputEl = inputRef.current
+    inputEl.focus()
+    inputEl.select()
+    if (propsAutoWidth) {
+      setInputComputeStyle(getStyleFromInput(inputEl))
+      updateInputWidth()
     }
-  };
+  }, [propsAutoWidth])
 
-  useEffect(() => {
-    setInputComputeStyle(getStyleFromInput(refInput?.current));
-    updateInputWidth();
-  }, []);
+  React.useEffect(() => {
+    if (propsAutoWidth) {
+      const resizeObserver = new ResizeObserver(() => {
+        updateInputWidth()
+      })
+      resizeObserver.observe(spanRef.current)
+    }
+  }, [propsAutoWidth])
 
-  useEffect(() => {
-    // 监听span的resize事件，更新input的宽度
-    const resizeObserver = new ResizeObserver(() => {
-      updateInputWidth();
-    });
-    resizeObserver.observe(refInputMirror.current);
-  }, [refInputMirror.current]);
+  const onChange = ({ target }) => {
+    setCurrent(target.value.replace(/[\n\r]/g, ''))
+  }
+
+  const onCompositionStart = () => {
+    inComposition.current = true
+  }
+
+  const onCompositionEnd = () => {
+    inComposition.current = false
+  }
+
+  const onKeyDown = ({ keyCode }) => {
+    if (inComposition.current) return
+
+    lastKeyCode.current = keyCode
+  }
+
+  const confirmChange = () => {
+    onSave(current.trim())
+  }
+
+  /**
+   * 使用useImperativeHandle暴露方法给父组件
+   * 通过ref.current.confirmChange()可以手动触发保存，ref.current.onCancel()可以手动触发取消
+   */
+  // sample code
+  // const ParentComponent = () => {
+  //   const editableRef = useRef(null);
+  //   return (
+  //     <>
+  //       <Editable ref={editableRef} value="初始文本" onSave={(value) => console.log('保存:', value)} onCancel={() => console.log('取消')} autoWidth={true}/>
+  //       <button onClick={() => editableRef.current.confirmChange()}>保存</button>
+  //       <button onClick={() => editableRef.current.onCancel()}>取消</button>
+  //     </>
+  //   );
+  // };
+  useImperativeHandle(ref, () => ({
+    confirmChange,
+    cancel: onCancel
+  }))
+
+  const onKeyUp = ({
+    keyCode,
+    ctrlKey,
+    altKey,
+    metaKey,
+    shiftKey
+  }) => {
+    // Check if it's a real key
+    if (
+      lastKeyCode.current === keyCode &&
+      !inComposition.current &&
+      !ctrlKey &&
+      !altKey &&
+      !metaKey &&
+      !shiftKey
+    ) {
+      if (keyCode === 13) { // Enter
+        confirmChange()
+        onEnd?.()
+      } else if (keyCode === 27) { // ESC
+        onCancel()
+      }
+    }
+  }
+
+  const onBlur = () => {
+    confirmChange()
+  }
+
+  const isObject = (obj: any): obj is Record<string, any> => {
+    return obj !== null && typeof obj === 'object' && !Array.isArray(obj)
+  }
+
+  const autoWidth = React.useMemo(() => {
+    return propsAutoWidth
+      ? { minWidth: 0, maxWidth: '100%', ...(isObject(propsAutoWidth) ? propsAutoWidth : {}) }
+      : null
+  }, [propsAutoWidth])
+
+  const style = {
+    minWidth: autoWidth?.minWidth,
+    maxWidth: autoWidth?.maxWidth,
+    width: autoWidth && 'auto',
+    ...propsStyle
+  }
+
+  const spanStyle = {
+    ...inputComputeStyle,
+    ...style,
+    whiteSpace: 'nowrap',
+    position: 'absolute',
+    visibility: 'hidden'
+  }
+
   return (
-    <div style={{ position:'relative', width: 'max-content' }}>
+    <>
       <input
-        type="text"
-        ref={refInput}
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        style={{ minWidth: '20px', maxWidth: `200px`, width: 'auto' }} // 也可以在这里设置最大宽度，以保持一致性
+        ref={inputRef}
+        className={className}
+        maxLength={maxLength}
+        value={current}
+        onChange={onChange}
+        onKeyDown={onKeyDown}
+        onKeyUp={onKeyUp}
+        onCompositionStart={onCompositionStart}
+        onCompositionEnd={onCompositionEnd}
+        onBlur={onBlur}
+        style={style}
       />
-      {/* 隐藏的span用于测量文本宽度 */}
-      <span ref={refInputMirror} style={{ 
-        // visibility: 'hidden', position: 'absolute', left: 0, top: 0, 
-        position: 'absolute',
-        minWidth: '20px', maxWidth: `200px`, width: 'auto',...inputComputeStyle }}>
-        {inputValue}
-      </span>
-    </div>
-  );
-}
-export {
-  Editable
-}
+      <span className="auto-width-placeholder" ref={spanRef} style={spanStyle}>{current}</span>
+    </>
+  )
+})
