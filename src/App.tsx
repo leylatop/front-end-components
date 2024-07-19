@@ -19,6 +19,7 @@ import { TextAreaUndoRedo } from './container/TextAreaUndoRedo'
 import { Foldable } from './container/FoldableImage'
 import { Editable } from './container/Editable'
 import { TableComponent } from './container/TableComponent'
+import { PasswordInputListener } from './container/PasswordInputListener'
 
 import './App.css'
 import {
@@ -55,6 +56,7 @@ const routers = [
   { path: '/foldable', name: 'Foldable', component: Foldable },
   { path: '/editable', name: 'Editable', component: Editable },
   {path: '/table-component', name: 'Table Component', component: TableComponent},
+  {path: '/password-input-listener', name: 'Password Input Listener', component: PasswordInputListener},
   
   // { path: '/snapshot', name: 'Snapshot', component: SnapShot },
 ]
