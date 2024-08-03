@@ -5,7 +5,7 @@ export const TooltipContainer = () => {
   return (
     <div>
       <Title>TooltipContainer</Title>
-      <Tooltip>
+      <Tooltip content={'-----------'} placement>
         <button onClick={() => {console.log('click')}}>Tooltip</button>
       </Tooltip>
     </div>
