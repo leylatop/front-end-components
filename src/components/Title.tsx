@@ -16,7 +16,7 @@ export type TitleProps = {
 export const Title = ({ children, level = 'h1'}) => {
   const Tag = LEVEL_MAP[level] || 'h1'
   return (
-    <div>
+    <div className="text-xl mb-4">
       <Tag>{children}</Tag>
     </div>
   )

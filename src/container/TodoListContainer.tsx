@@ -1,6 +1,5 @@
 import { useState, useRef } from 'react'
 import { TodoItem, TodoItemType } from '../components/TodoItem'
-import { Title } from '../components/Title'
 
 const TodoListContainer = () => {
   const list = [{ id: 1, name: 'todo1', isDone: false }, { id: 2, name: 'todo2', isDone: false }]
@@ -39,7 +38,6 @@ const TodoListContainer = () => {
   }
   return (
     <div>
-      <Title>TodoList</Title>
       <button onClick={handleAll}>全部完成</button>
       <div>
         <input ref={inputRef} type="text" />

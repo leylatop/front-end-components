@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { Toast, ToastItem } from "../components/Toast"
-import { Title } from "../components/Title"
 
 const ToastContainer = () => {
   const [toastList, setToastList] = useState([] as ToastItem[])
@@ -22,7 +21,6 @@ const ToastContainer = () => {
   
   return (
     <>
-      <Title>ToastContainer</Title>
       <button onClick={() => handleAddToast({ id: Date.now(), message: `hello world ${Date.now()}`, duration: 3000 })}>弹出Toast</button>
       <Toast item={toastItem} removeToast={handleRemoveToast}/>
     </>
