@@ -3,17 +3,31 @@
 @tailwind utilities;
 @tailwind screens;
 
+/* 定义主题颜色变量 */
+:root {
+  --primary-color: #10b981; /* 默认主题颜色 */
+  --background-color: #ffffff;
+  --text-color: #000000;
+}
+
+[data-theme="dark"] {
+  --primary-color: #10b981; /* 深色主题颜色 */
+  --background-color: #000000;
+  --text-color: #ffffff;
+}
+
 /* 添加全局样式 */
 html, body {
-  @apply  text-gray-900;
+  background-color: var(--background-color);
+  color: var(--text-color);
 }
 
 #root {
-  @apply w-full h-full text-black text-sm;
+  @apply w-full h-full text-sm;
 }
 
 .primary-color {
-  @apply text-green-500;
+  color: var(--primary-color)
 }
 
 /* 添加全局样式 */
