@@ -2,16 +2,20 @@ import React, { useState, useRef, useEffect } from 'react';
 
 const DraggableDivAlongSvgPath = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [pathLength, setPathLength] = useState(0);
+  const [currentLength, setCurrentLength] = useState(0);
   const svgRef = useRef(null);
+  const pathRef = useRef(null);
   const divRef = useRef(null);
   const isDraggingRef = useRef(false);
 
   useEffect(() => {
-    const svgElement = svgRef.current;
-    const pathElement = svgElement.querySelector('path');
-    const pathLength = pathElement.getTotalLength();
+    const pathElement = pathRef.current;
+    const totalLength = pathElement.getTotalLength();
+    setPathLength(totalLength);
     const initialPoint = pathElement.getPointAtLength(0);
-    setPosition({ x: initialPoint.x, y: initialPoint.y });
+    setPosition(initialPoint);
+    setCurrentLength(0);
   }, []);
 
   const handleMouseDown = (e) => {
@@ -24,13 +28,15 @@ const DraggableDivAlongSvgPath = () => {
     if (!isDraggingRef.current) return;
 
     const svgElement = svgRef.current;
-    const pathElement = svgElement.querySelector('path');
+    const pathElement = pathRef.current;
     const svgRect = svgElement.getBoundingClientRect();
     const mouseX = e.clientX - svgRect.left;
     const mouseY = e.clientY - svgRect.top;
 
-    const closestPoint = getClosestPointOnPath(pathElement, mouseX, mouseY);
-    setPosition(closestPoint);
+    const closestLength = getClosestLengthOnPath(pathElement, mouseX, mouseY);
+    setCurrentLength(closestLength);
+    const newPoint = pathElement.getPointAtLength(closestLength);
+    setPosition(newPoint);
   };
 
   const handleMouseUp = () => {
@@ -39,49 +45,40 @@ const DraggableDivAlongSvgPath = () => {
     document.removeEventListener('mouseup', handleMouseUp);
   };
 
-  const getClosestPointOnPath = (pathElement, x, y) => {
-    const pathLength = pathElement.getTotalLength();
-    let precision = 8;
-    let best;
-    let bestLength;
-    let bestDistance = Infinity;
+  const getClosestLengthOnPath = (pathElement, x, y) => {
+    let closestLength = 0;
+    let closestDistance = Infinity;
 
-    // First pass: find the approximate location
-    for (let scan = 0; scan <= pathLength; scan += pathLength / precision) {
-      const point = pathElement.getPointAtLength(scan);
-      const distance = Math.sqrt((point.x - x) ** 2 + (point.y - y) ** 2);
+    // 使用二分搜索来找到最近的点
+    const binarySearch = (start, end, threshold) => {
+      if (end - start < threshold) return (start + end) / 2;
 
-      if (distance < bestDistance) {
-        best = point;
-        bestLength = scan;
-        bestDistance = distance;
-      }
-    }
+      const mid = (start + end) / 2;
+      const leftThird = (2 * start + end) / 3;
+      const rightThird = (start + 2 * end) / 3;
 
-    precision *= 2;
+      const midPoint = pathElement.getPointAtLength(mid);
+      const leftPoint = pathElement.getPointAtLength(leftThird);
+      const rightPoint = pathElement.getPointAtLength(rightThird);
 
-    // Second pass: refine the location
-    let lower = Math.max(0, bestLength - pathLength / precision);
-    let upper = Math.min(pathLength, bestLength + pathLength / precision);
-    while (upper - lower > 0.5) {
-      const middleLength = (upper + lower) / 2;
-      const middlePoint = pathElement.getPointAtLength(middleLength);
-      const middleDistance = Math.sqrt((middlePoint.x - x) ** 2 + (middlePoint.y - y) ** 2);
+      const midDist = distance(x, y, midPoint.x, midPoint.y);
+      const leftDist = distance(x, y, leftPoint.x, leftPoint.y);
+      const rightDist = distance(x, y, rightPoint.x, rightPoint.y);
 
-      if (middleDistance < bestDistance) {
-        best = middlePoint;
-        bestLength = middleLength;
-        bestDistance = middleDistance;
-      }
-
-      if (middleLength < bestLength) {
-        lower = middleLength;
+      if (leftDist < midDist && leftDist < rightDist) {
+        return binarySearch(start, mid, threshold);
+      } else if (rightDist < midDist && rightDist < leftDist) {
+        return binarySearch(mid, end, threshold);
       } else {
-        upper = middleLength;
+        return binarySearch(leftThird, rightThird, threshold);
       }
-    }
+    };
 
-    return best;
+    return binarySearch(0, pathLength, 0.1);
+  };
+
+  const distance = (x1, y1, x2, y2) => {
+    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
   };
 
   return (
@@ -95,6 +92,7 @@ const DraggableDivAlongSvgPath = () => {
         className="absolute top-0 left-0"
       >
         <path
+          ref={pathRef}
           d="M0 136 L95 136 Q95 136 95 136 L95 0 Q95 0 95 0 L380 0 Q380 0 380 0 L380 271 Q380 271 380 271 L228 271"
           strokeWidth="2"
           stroke="rgba(153,153,153,1)"
