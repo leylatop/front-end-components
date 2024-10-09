@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from 'react';
 
 const DraggableDivAlongSvgPath = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [pathLength, setPathLength] = useState(0);
-  const [currentLength, setCurrentLength] = useState(0);
+  const [pathLength, setPathLength] = useState(0); // total length of the path
+  const [currentLength, setCurrentLength] = useState(0); // div position along the path
   const [path, setPath] = useState("M0 136 L95 136 Q95 136 95 136 L95 0 Q95 0 95 0 L380 0 Q380 0 380 0 L380 271 Q380 271 380 271 L228 271");
   const svgRef = useRef(null);
   const pathRef = useRef(null);
@@ -50,6 +50,7 @@ const DraggableDivAlongSvgPath = () => {
     if (!svgElement || !pathElement) return;
 
     const svgRect = svgElement.getBoundingClientRect();
+    // Get the mouse position relative to the SVG element
     const mouseX = e.clientX - svgRect.left;
     const mouseY = e.clientY - svgRect.top;
 
@@ -72,8 +73,8 @@ const DraggableDivAlongSvgPath = () => {
   };
 
   const getClosestLengthOnPath = (pathElement, x, y) => {
-    let closestLength = 0;
-    let closestDistance = Infinity;
+    // let closestLength = 0;
+    // let closestDistance = Infinity;
 
     // 使用二分搜索来找到最近的点
     const binarySearch = (start, end, threshold) => {
@@ -151,7 +152,7 @@ const DraggableDivAlongSvgPath = () => {
         </svg>
         <div
           ref={divRef}
-          className="absolute w-8 h-8 bg-blue-500 rounded-full cursor-move transform -translate-x-1/2 -translate-y-1/2"
+          className="absolute w-32 h-8 bg-blue-500 rounded-full cursor-move transform -translate-x-1/2 -translate-y-1/2"
           style={{
             left: `${position.x}px`,
             top: `${position.y}px`,
