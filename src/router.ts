@@ -21,6 +21,7 @@ import { Editable } from './container/Editable'
 import { TableComponent } from './container/TableComponent'
 import { PasswordInputListener } from './container/PasswordInputListener'
 import { Home } from './container/Home'
+import DraggableDivAlongSvgPath from './container/DraggableDivAlongSvgPath'
 
 export const routers = [
   {path: '/', name: 'Home', component: Home },
@@ -51,5 +52,6 @@ export const routers = [
   { path: '/editable', name: 'Editable', component: Editable },
   {path: '/table-component', name: 'Table Component', component: TableComponent},
   {path: '/password-input-listener', name: 'Password Input Listener', component: PasswordInputListener},
+  {path: '/draggable-div-along-svg-path', name: 'Draggable Div Along Svg Path', component: DraggableDivAlongSvgPath},
   // { path: '/snapshot', name: 'Snapshot', component: SnapShot },
 ]

@@ -20,6 +20,8 @@
 html, body {
   background-color: var(--background-color);
   color: var(--text-color);
+  /*禁止选中文本*/
+  user-select: none;
 }
 
 #root {
