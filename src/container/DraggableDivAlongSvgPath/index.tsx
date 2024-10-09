@@ -4,19 +4,37 @@ const DraggableDivAlongSvgPath = () => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [pathLength, setPathLength] = useState(0);
   const [currentLength, setCurrentLength] = useState(0);
+  const [path, setPath] = useState("M0 136 L95 136 Q95 136 95 136 L95 0 Q95 0 95 0 L380 0 Q380 0 380 0 L380 271 Q380 271 380 271 L228 271");
   const svgRef = useRef(null);
   const pathRef = useRef(null);
   const divRef = useRef(null);
   const isDraggingRef = useRef(false);
 
   useEffect(() => {
+    updatePathAndPosition();
+  }, [path]);
+
+  const updatePathAndPosition = () => {
     const pathElement = pathRef.current;
+    if (!pathElement) return;
+
     const totalLength = pathElement.getTotalLength();
     setPathLength(totalLength);
-    const initialPoint = pathElement.getPointAtLength(0);
-    setPosition(initialPoint);
-    setCurrentLength(0);
-  }, []);
+    
+    // Calculate new position, keeping the relative position constant
+    const currentPathLength = pathLength || totalLength; // default pathLength value is 0, so first time it will be totalLength
+    const newLength = Math.min((currentLength / currentPathLength) * totalLength, totalLength);
+    setCurrentLength(newLength);
+    
+    try {
+      const newPoint = pathElement.getPointAtLength(newLength);
+      if (isFinite(newPoint.x) && isFinite(newPoint.y)) {
+        setPosition(newPoint);
+      }
+    } catch (error) {
+      console.error("Error getting point at length:", error);
+    }
+  };
 
   const handleMouseDown = (e) => {
     isDraggingRef.current = true;
@@ -29,14 +47,22 @@ const DraggableDivAlongSvgPath = () => {
 
     const svgElement = svgRef.current;
     const pathElement = pathRef.current;
+    if (!svgElement || !pathElement) return;
+
     const svgRect = svgElement.getBoundingClientRect();
     const mouseX = e.clientX - svgRect.left;
     const mouseY = e.clientY - svgRect.top;
 
     const closestLength = getClosestLengthOnPath(pathElement, mouseX, mouseY);
     setCurrentLength(closestLength);
-    const newPoint = pathElement.getPointAtLength(closestLength);
-    setPosition(newPoint);
+    try {
+      const newPoint = pathElement.getPointAtLength(closestLength);
+      if (isFinite(newPoint.x) && isFinite(newPoint.y)) {
+        setPosition(newPoint);
+      }
+    } catch (error) {
+      console.error("Error getting point at length:", error);
+    }
   };
 
   const handleMouseUp = () => {
@@ -57,20 +83,25 @@ const DraggableDivAlongSvgPath = () => {
       const leftThird = (2 * start + end) / 3;
       const rightThird = (start + 2 * end) / 3;
 
-      const midPoint = pathElement.getPointAtLength(mid);
-      const leftPoint = pathElement.getPointAtLength(leftThird);
-      const rightPoint = pathElement.getPointAtLength(rightThird);
+      try {
+        const midPoint = pathElement.getPointAtLength(mid);
+        const leftPoint = pathElement.getPointAtLength(leftThird);
+        const rightPoint = pathElement.getPointAtLength(rightThird);
 
-      const midDist = distance(x, y, midPoint.x, midPoint.y);
-      const leftDist = distance(x, y, leftPoint.x, leftPoint.y);
-      const rightDist = distance(x, y, rightPoint.x, rightPoint.y);
+        const midDist = distance(x, y, midPoint.x, midPoint.y);
+        const leftDist = distance(x, y, leftPoint.x, leftPoint.y);
+        const rightDist = distance(x, y, rightPoint.x, rightPoint.y);
 
-      if (leftDist < midDist && leftDist < rightDist) {
-        return binarySearch(start, mid, threshold);
-      } else if (rightDist < midDist && rightDist < leftDist) {
-        return binarySearch(mid, end, threshold);
-      } else {
-        return binarySearch(leftThird, rightThird, threshold);
+        if (leftDist < midDist && leftDist < rightDist) {
+          return binarySearch(start, mid, threshold);
+        } else if (rightDist < midDist && rightDist < leftDist) {
+          return binarySearch(mid, end, threshold);
+        } else {
+          return binarySearch(leftThird, rightThird, threshold);
+        }
+      } catch (error) {
+        console.error("Error in binary search:", error);
+        return mid; // Return a fallback value
       }
     };
 
@@ -81,34 +112,60 @@ const DraggableDivAlongSvgPath = () => {
     return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
   };
 
+  const generateRandomPath = () => {
+    const width = 380;
+    const height = 271;
+    const points = [
+      { x: 0, y: Math.random() * height },
+      { x: Math.random() * width, y: Math.random() * height },
+      { x: Math.random() * width, y: Math.random() * height },
+      { x: width, y: Math.random() * height }
+    ];
+
+    const path = `M${points[0].x} ${points[0].y} ` +
+                 `C${points[1].x} ${points[1].y}, ` +
+                 `${points[2].x} ${points[2].y}, ` +
+                 `${points[3].x} ${points[3].y}`;
+    
+    setPath(path);
+  };
+
   return (
-    <div className="relative w-[380px] h-[271px]">
-      <svg
-        ref={svgRef}
-        width="380"
-        height="271"
-        viewBox="0 0 380 271"
-        xmlns="http://www.w3.org/2000/svg"
-        className="absolute top-0 left-0"
-      >
-        <path
-          ref={pathRef}
-          d="M0 136 L95 136 Q95 136 95 136 L95 0 Q95 0 95 0 L380 0 Q380 0 380 0 L380 271 Q380 271 380 271 L228 271"
-          strokeWidth="2"
-          stroke="rgba(153,153,153,1)"
-          fill="none"
+    <>
+      <div className="relative w-[380px] h-[271px]">
+        <svg
+          ref={svgRef}
+          width="380"
+          height="271"
+          viewBox="0 0 380 271"
+          xmlns="http://www.w3.org/2000/svg"
+          className="absolute top-0 left-0"
+        >
+          <path
+            ref={pathRef}
+            d={path}
+            strokeWidth="2"
+            stroke="rgba(153,153,153,1)"
+            fill="none"
+          />
+        </svg>
+        <div
+          ref={divRef}
+          className="absolute w-8 h-8 bg-blue-500 rounded-full cursor-move transform -translate-x-1/2 -translate-y-1/2"
+          style={{
+            left: `${position.x}px`,
+            top: `${position.y}px`,
+          }}
+          onMouseDown={handleMouseDown}
         />
-      </svg>
-      <div
-        ref={divRef}
-        className="absolute w-8 h-8 bg-blue-500 rounded-full cursor-move transform -translate-x-1/2 -translate-y-1/2"
-        style={{
-          left: `${position.x}px`,
-          top: `${position.y}px`,
-        }}
-        onMouseDown={handleMouseDown}
-      />
-    </div>
+      </div>
+      <button
+        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+        onClick={generateRandomPath}
+      >
+        Change Path
+      </button>
+    </>
   );
 };
 
