@@ -9,26 +9,37 @@ const DraggableDivAlongSvgPath = () => {
   const pathRef = useRef(null);
   const divRef = useRef(null);
   const isDraggingRef = useRef(false);
+  const isSetPositionFlag = useRef(false);
 
   useEffect(() => {
+    console.log('path', path)
     updatePathAndPosition();
   }, [path]);
 
   const updatePathAndPosition = () => {
     const pathElement = pathRef.current;
     if (!pathElement) return;
-
-    const totalLength = pathElement.getTotalLength();
+    console.log('position', position)
+    const totalLength = pathElement.getTotalLength(); // get the total length of the path
     setPathLength(totalLength);
     
     // Calculate new position, keeping the relative position constant
-    const currentPathLength = pathLength || totalLength; // default pathLength value is 0, so first time it will be totalLength
-    const newLength = Math.min((currentLength / currentPathLength) * totalLength, totalLength);
+    // const currentPathLength = pathLength || totalLength; // default pathLength value is 0, so first time it will be totalLength
+    // const newLength = Math.min((currentLength / currentPathLength) * totalLength, totalLength);
+    let newLength;
+    if(!isSetPositionFlag.current) {
+      newLength = totalLength / 2; // set the div in the middle of the path
+    } else {
+      // currentLength 不是最新的值，所以需要重新获取
+      newLength = Math.min((currentLength / (pathLength || totalLength)) * totalLength, totalLength);
+    }
     setCurrentLength(newLength);
     
     try {
-      const newPoint = pathElement.getPointAtLength(newLength);
+      const newPoint = pathElement.getPointAtLength(newLength); // get the point at the given length
       if (isFinite(newPoint.x) && isFinite(newPoint.y)) {
+        console.log('newPoint', newPoint)
+        // isSetPositionFlag.current = true;
         setPosition(newPoint);
       }
     } catch (error) {
@@ -59,6 +70,7 @@ const DraggableDivAlongSvgPath = () => {
     try {
       const newPoint = pathElement.getPointAtLength(closestLength);
       if (isFinite(newPoint.x) && isFinite(newPoint.y)) {
+        isSetPositionFlag.current = true;
         setPosition(newPoint);
       }
     } catch (error) {
@@ -150,7 +162,7 @@ const DraggableDivAlongSvgPath = () => {
             fill="none"
           />
         </svg>
-        <div
+        {true &&<div
           ref={divRef}
           className="absolute w-32 h-8 bg-blue-500 rounded-full cursor-move transform -translate-x-1/2 -translate-y-1/2"
           style={{
@@ -158,7 +170,7 @@ const DraggableDivAlongSvgPath = () => {
             top: `${position.y}px`,
           }}
           onMouseDown={handleMouseDown}
-        />
+        />}
       </div>
       <button
         className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
