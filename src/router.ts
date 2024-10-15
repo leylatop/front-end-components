@@ -22,6 +22,7 @@ import { TableComponent } from './container/TableComponent'
 import { PasswordInputListener } from './container/PasswordInputListener'
 import { Home } from './container/Home'
 import DraggableDivAlongSvgPath from './container/DraggableDivAlongSvgPath'
+import SVGPathEditor from './container/SVGPathEditor'
 
 export const routers = [
   {path: '/', name: 'Home', component: Home },
@@ -53,5 +54,6 @@ export const routers = [
   {path: '/table-component', name: 'Table Component', component: TableComponent},
   {path: '/password-input-listener', name: 'Password Input Listener', component: PasswordInputListener},
   {path: '/draggable-div-along-svg-path', name: 'Draggable Div Along Svg Path', component: DraggableDivAlongSvgPath},
+  { path: '/svg-path-editor', name: 'SVG Path Editor', component: SVGPathEditor },
   // { path: '/snapshot', name: 'Snapshot', component: SnapShot },
 ]
