@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 const DraggableDivAlongSvgPath = () => {
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState({ x: 0, y: 0 }); // div position = div length path length
   const [pathLength, setPathLength] = useState(0); // total length of the path
-  const [currentLength, setCurrentLength] = useState(0); // div position along the path
+  
+  const [proportion, setProportion] = useState(0.5); // div position along the path
+  // const [currentLength, setCurrentLength] = useState(0); // div position along the path
   const [path, setPath] = useState("M0 136 L95 136 Q95 136 95 136 L95 0 Q95 0 95 0 L380 0 Q380 0 380 0 L380 271 Q380 271 380 271 L228 271");
+
   const svgRef = useRef(null);
   const pathRef = useRef(null);
   const divRef = useRef(null);
@@ -12,31 +15,34 @@ const DraggableDivAlongSvgPath = () => {
   const isSetPositionFlag = useRef(false);
 
   useEffect(() => {
-    console.log('path', path)
     updatePathAndPosition();
   }, [path]);
 
   const updatePathAndPosition = () => {
     const pathElement = pathRef.current;
     if (!pathElement) return;
-    console.log('position', position)
+    // path 的总长度
     const totalLength = pathElement.getTotalLength(); // get the total length of the path
     setPathLength(totalLength);
+    // const 
     
     // Calculate new position, keeping the relative position constant
     // const currentPathLength = pathLength || totalLength; // default pathLength value is 0, so first time it will be totalLength
     // const newLength = Math.min((currentLength / currentPathLength) * totalLength, totalLength);
-    let newLength;
-    if(!isSetPositionFlag.current) {
-      newLength = totalLength / 2; // set the div in the middle of the path
-    } else {
-      // currentLength 不是最新的值，所以需要重新获取
-      newLength = Math.min((currentLength / (pathLength || totalLength)) * totalLength, totalLength);
-    }
-    setCurrentLength(newLength);
-    
+    // let newLength;
+    // if(!isSetPositionFlag.current) {
+    //   newLength = totalLength / 2; // set the div in the middle of the path
+    // } else {
+    //   // currentLength 不是最新的值，所以需要重新获取
+    //   newLength = Math.min((currentLength / (pathLength || totalLength)) * totalLength, totalLength);
+    // }
+    // debugger
+    // setCurrentLength(newLength);
+    // div在path上的位置
+    const pointRelativeToPath = totalLength * proportion; 
     try {
-      const newPoint = pathElement.getPointAtLength(newLength); // get the point at the given length
+      // div在path上的位置对应的坐标
+      const newPoint = pathElement.getPointAtLength(pointRelativeToPath); // get the point at the given length
       if (isFinite(newPoint.x) && isFinite(newPoint.y)) {
         console.log('newPoint', newPoint)
         // isSetPositionFlag.current = true;
@@ -65,8 +71,9 @@ const DraggableDivAlongSvgPath = () => {
     const mouseX = e.clientX - svgRect.left;
     const mouseY = e.clientY - svgRect.top;
 
+    const pathLength = pathElement.getTotalLength();
     const closestLength = getClosestLengthOnPath(pathElement, mouseX, mouseY);
-    setCurrentLength(closestLength);
+    setProportion(closestLength / pathLength);
     try {
       const newPoint = pathElement.getPointAtLength(closestLength);
       if (isFinite(newPoint.x) && isFinite(newPoint.y)) {
@@ -162,7 +169,7 @@ const DraggableDivAlongSvgPath = () => {
             fill="none"
           />
         </svg>
-        {true &&<div
+        <div
           ref={divRef}
           className="absolute w-32 h-8 bg-blue-500 rounded-full cursor-move transform -translate-x-1/2 -translate-y-1/2"
           style={{
@@ -170,7 +177,7 @@ const DraggableDivAlongSvgPath = () => {
             top: `${position.y}px`,
           }}
           onMouseDown={handleMouseDown}
-        />}
+        />
       </div>
       <button
         className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
