@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 const DraggableDivAlongSvgPath = () => {
-  const [position, setPosition] = useState({ x: 0, y: 0 }); // div position = div length path length
+  const [position, setPosition] = useState(null); // div position = div length path length
   const [pathLength, setPathLength] = useState(0); // total length of the path
   
   const [proportion, setProportion] = useState(0.5); // div position along the path
@@ -12,7 +12,7 @@ const DraggableDivAlongSvgPath = () => {
   const pathRef = useRef(null);
   const divRef = useRef(null);
   const isDraggingRef = useRef(false);
-  const isSetPositionFlag = useRef(false);
+  // const isSetPositionFlag = useRef(false);
 
   useEffect(() => {
     updatePathAndPosition();
@@ -77,7 +77,7 @@ const DraggableDivAlongSvgPath = () => {
     try {
       const newPoint = pathElement.getPointAtLength(closestLength);
       if (isFinite(newPoint.x) && isFinite(newPoint.y)) {
-        isSetPositionFlag.current = true;
+        // isSetPositionFlag.current = true;
         setPosition(newPoint);
       }
     } catch (error) {
@@ -169,7 +169,7 @@ const DraggableDivAlongSvgPath = () => {
             fill="none"
           />
         </svg>
-        <div
+        {position && <div
           ref={divRef}
           className="absolute w-32 h-8 bg-blue-500 rounded-full cursor-move transform -translate-x-1/2 -translate-y-1/2"
           style={{
@@ -177,7 +177,7 @@ const DraggableDivAlongSvgPath = () => {
             top: `${position.y}px`,
           }}
           onMouseDown={handleMouseDown}
-        />
+        />}
       </div>
       <button
         className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
