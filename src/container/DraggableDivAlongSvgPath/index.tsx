@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 
 const DraggableDivAlongSvgPath = () => {
   const [position, setPosition] = useState(null); // div position = div length path length
-  const [pathLength, setPathLength] = useState(0); // total length of the path
+  // const [pathLength, setPathLength] = useState(0); // total length of the path
   
   const [proportion, setProportion] = useState(0.5); // div position along the path
   // const [currentLength, setCurrentLength] = useState(0); // div position along the path
@@ -23,7 +23,7 @@ const DraggableDivAlongSvgPath = () => {
     if (!pathElement) return;
     // path 的总长度
     const totalLength = pathElement.getTotalLength(); // get the total length of the path
-    setPathLength(totalLength);
+    // setPathLength(totalLength);
     // const 
     
     // Calculate new position, keeping the relative position constant
@@ -94,7 +94,7 @@ const DraggableDivAlongSvgPath = () => {
   const getClosestLengthOnPath = (pathElement, x, y) => {
     // let closestLength = 0;
     // let closestDistance = Infinity;
-
+    const pathLength = pathElement.getTotalLength();
     // 使用二分搜索来找到最近的点
     const binarySearch = (start, end, threshold) => {
       if (end - start < threshold) return (start + end) / 2;
