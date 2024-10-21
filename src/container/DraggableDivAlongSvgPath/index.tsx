@@ -57,7 +57,7 @@ const DraggableDivAlongSvgPath = () => {
     setPathSegments(segments);
     
     // 使用保存的相对位置更新文本位置
-    updateTextPosition(segments, textRelativePosition);
+    updateTextPosition(textRelativePosition);
   }, [startPoint, endPoint, pathType]);
 
   // 将SVG路径分解为线段
@@ -89,7 +89,7 @@ const DraggableDivAlongSvgPath = () => {
   };
 
   // 更新文本位置
-  const updateTextPosition = (segments, relativePosition) => {
+  const updateTextPosition = (relativePosition: number) => {
     const pathElement = pathRef.current;
     if (!pathElement) return;
     
