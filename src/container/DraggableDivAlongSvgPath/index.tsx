@@ -1,59 +1,120 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 const DraggableDivAlongSvgPath = () => {
-  const [position, setPosition] = useState(null); // div position = div length path length
-  // const [pathLength, setPathLength] = useState(0); // total length of the path
-  
-  const [proportion, setProportion] = useState(0.5); // div position along the path
-  // const [currentLength, setCurrentLength] = useState(0); // div position along the path
-  const [path, setPath] = useState("M0 136 L95 136 Q95 136 95 136 L95 0 Q95 0 95 0 L380 0 Q380 0 380 0 L380 271 Q380 271 380 271 L228 271");
-
+  const [position, setPosition] = useState(null);
+  const [pathSegments, setPathSegments] = useState([]);
   const svgRef = useRef(null);
   const pathRef = useRef(null);
-  const divRef = useRef(null);
   const isDraggingRef = useRef(false);
-  // const isSetPositionFlag = useRef(false);
 
+  // 初始化时将路径分解为线段
   useEffect(() => {
-    updatePathAndPosition();
-  }, [path]);
-
-  const updatePathAndPosition = () => {
     const pathElement = pathRef.current;
     if (!pathElement) return;
-    // path 的总长度
-    const totalLength = pathElement.getTotalLength(); // get the total length of the path
-    // setPathLength(totalLength);
-    // const 
+
+    // 将路径分解为多个点
+    const segments = decomposePathToSegments(pathElement);
+    setPathSegments(segments);
     
-    // Calculate new position, keeping the relative position constant
-    // const currentPathLength = pathLength || totalLength; // default pathLength value is 0, so first time it will be totalLength
-    // const newLength = Math.min((currentLength / currentPathLength) * totalLength, totalLength);
-    // let newLength;
-    // if(!isSetPositionFlag.current) {
-    //   newLength = totalLength / 2; // set the div in the middle of the path
-    // } else {
-    //   // currentLength 不是最新的值，所以需要重新获取
-    //   newLength = Math.min((currentLength / (pathLength || totalLength)) * totalLength, totalLength);
-    // }
-    // debugger
-    // setCurrentLength(newLength);
-    // div在path上的位置
-    const pointRelativeToPath = totalLength * proportion; 
-    try {
-      // div在path上的位置对应的坐标
-      const newPoint = pathElement.getPointAtLength(pointRelativeToPath); // get the point at the given length
-      if (isFinite(newPoint.x) && isFinite(newPoint.y)) {
-        console.log('newPoint', newPoint)
-        // isSetPositionFlag.current = true;
-        setPosition(newPoint);
-      }
-    } catch (error) {
-      console.error("Error getting point at length:", error);
+    // 初始化位置在路径中间
+    const midSegment = segments[Math.floor(segments.length / 2)];
+    if (midSegment) {
+      const midPoint = {
+        x: (midSegment.start.x + midSegment.end.x) / 2,
+        y: (midSegment.start.y + midSegment.end.y) / 2
+      };
+      setPosition(midPoint);
     }
+  }, []);
+
+  // 将SVG路径分解为线段
+  const decomposePathToSegments = (pathElement) => {
+    const segments = [];
+    const totalLength = pathElement.getTotalLength();
+    const SEGMENT_LENGTH = 5; // 每段长度，可以调整精度
+    
+    let currentLength = 0;
+    let prevPoint = pathElement.getPointAtLength(0);
+    
+    while (currentLength < totalLength) {
+      currentLength += SEGMENT_LENGTH;
+      if (currentLength > totalLength) currentLength = totalLength;
+      
+      const currentPoint = pathElement.getPointAtLength(currentLength);
+      segments.push({
+        start: { x: prevPoint.x, y: prevPoint.y },
+        end: { x: currentPoint.x, y: currentPoint.y },
+        length: SEGMENT_LENGTH,
+        totalLength: currentLength
+      });
+      
+      prevPoint = currentPoint;
+      if (currentLength === totalLength) break;
+    }
+    
+    return segments;
+  };
+
+  // 计算点到线段的投影点
+  const projectPointOnLineSegment = (point, segment) => {
+    const { start, end } = segment;
+    
+    // 计算线段向量
+    const lineVectorX = end.x - start.x;
+    const lineVectorY = end.y - start.y;
+    
+    // 计算点到线段起点的向量
+    const pointVectorX = point.x - start.x;
+    const pointVectorY = point.y - start.y;
+    
+    // 计算线段长度的平方
+    const lineLengthSquared = lineVectorX * lineVectorX + lineVectorY * lineVectorY;
+    
+    // 如果线段长度为0，返回起点
+    if (lineLengthSquared === 0) return start;
+    
+    // 计算投影比例
+    let t = (pointVectorX * lineVectorX + pointVectorY * lineVectorY) / lineLengthSquared;
+    
+    // 限制投影点在线段上
+    t = Math.max(0, Math.min(1, t));
+    
+    // 计算投影点坐标
+    return {
+      x: start.x + t * lineVectorX,
+      y: start.y + t * lineVectorY,
+      t: t,
+      segment
+    };
+  };
+
+  // 找到距离鼠标最近的线段及投影点
+  const findClosestProjection = (mouseX, mouseY) => {
+    let minDistance = Infinity;
+    let closestProjection = null;
+    
+    pathSegments.forEach(segment => {
+      const projection = projectPointOnLineSegment(
+        { x: mouseX, y: mouseY },
+        segment
+      );
+      
+      const distance = Math.sqrt(
+        Math.pow(mouseX - projection.x, 2) + 
+        Math.pow(mouseY - projection.y, 2)
+      );
+      
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestProjection = projection;
+      }
+    });
+    
+    return closestProjection;
   };
 
   const handleMouseDown = (e) => {
+    e.preventDefault();
     isDraggingRef.current = true;
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
@@ -61,27 +122,18 @@ const DraggableDivAlongSvgPath = () => {
 
   const handleMouseMove = (e) => {
     if (!isDraggingRef.current) return;
-
+    
     const svgElement = svgRef.current;
-    const pathElement = pathRef.current;
-    if (!svgElement || !pathElement) return;
+    if (!svgElement) return;
 
     const svgRect = svgElement.getBoundingClientRect();
-    // Get the mouse position relative to the SVG element
     const mouseX = e.clientX - svgRect.left;
     const mouseY = e.clientY - svgRect.top;
 
-    const pathLength = pathElement.getTotalLength();
-    const closestLength = getClosestLengthOnPath(pathElement, mouseX, mouseY);
-    setProportion(closestLength / pathLength);
-    try {
-      const newPoint = pathElement.getPointAtLength(closestLength);
-      if (isFinite(newPoint.x) && isFinite(newPoint.y)) {
-        // isSetPositionFlag.current = true;
-        setPosition(newPoint);
-      }
-    } catch (error) {
-      console.error("Error getting point at length:", error);
+    // 找到最近的投影点
+    const projection = findClosestProjection(mouseX, mouseY);
+    if (projection) {
+      setPosition({ x: projection.x, y: projection.y });
     }
   };
 
@@ -91,101 +143,47 @@ const DraggableDivAlongSvgPath = () => {
     document.removeEventListener('mouseup', handleMouseUp);
   };
 
-  const getClosestLengthOnPath = (pathElement, x, y) => {
-    // let closestLength = 0;
-    // let closestDistance = Infinity;
-    const pathLength = pathElement.getTotalLength();
-    // 使用二分搜索来找到最近的点
-    const binarySearch = (start, end, threshold) => {
-      if (end - start < threshold) return (start + end) / 2;
-
-      const mid = (start + end) / 2;
-      const leftThird = (2 * start + end) / 3;
-      const rightThird = (start + 2 * end) / 3;
-
-      try {
-        const midPoint = pathElement.getPointAtLength(mid);
-        const leftPoint = pathElement.getPointAtLength(leftThird);
-        const rightPoint = pathElement.getPointAtLength(rightThird);
-
-        const midDist = distance(x, y, midPoint.x, midPoint.y);
-        const leftDist = distance(x, y, leftPoint.x, leftPoint.y);
-        const rightDist = distance(x, y, rightPoint.x, rightPoint.y);
-
-        if (leftDist < midDist && leftDist < rightDist) {
-          return binarySearch(start, mid, threshold);
-        } else if (rightDist < midDist && rightDist < leftDist) {
-          return binarySearch(mid, end, threshold);
-        } else {
-          return binarySearch(leftThird, rightThird, threshold);
-        }
-      } catch (error) {
-        console.error("Error in binary search:", error);
-        return mid; // Return a fallback value
-      }
-    };
-
-    return binarySearch(0, pathLength, 0.1);
-  };
-
-  const distance = (x1, y1, x2, y2) => {
-    return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
-  };
-
-  const generateRandomPath = () => {
-    const width = 380;
-    const height = 271;
-    const points = [
-      { x: 0, y: Math.random() * height },
-      { x: Math.random() * width, y: Math.random() * height },
-      { x: Math.random() * width, y: Math.random() * height },
-      { x: width, y: Math.random() * height }
-    ];
-
-    const path = `M${points[0].x} ${points[0].y} ` +
-                 `C${points[1].x} ${points[1].y}, ` +
-                 `${points[2].x} ${points[2].y}, ` +
-                 `${points[3].x} ${points[3].y}`;
-    
-    setPath(path);
-  };
-
   return (
-    <>
-      <div className="relative w-[380px] h-[271px]">
-        <svg
-          ref={svgRef}
-          width="380"
-          height="271"
-          viewBox="0 0 380 271"
-          xmlns="http://www.w3.org/2000/svg"
-          className="absolute top-0 left-0"
-        >
-          <path
-            ref={pathRef}
-            d={path}
-            strokeWidth="2"
-            stroke="rgba(153,153,153,1)"
-            fill="none"
+    <div className="relative w-[380px] h-[271px]">
+      <svg
+        ref={svgRef}
+        width="1000"
+        height="1000"
+        viewBox="0 0 1000 1000"
+        xmlns="http://www.w3.org/2000/svg"
+        className="absolute top-0 left-0"
+      >
+        <path
+          ref={pathRef}
+          d="M0 162 L0 14 Q0 0 14 0 L729 0 Q743 0 743 14 L743 39 Q743 53 729 53 L584 53 Q570 53 570 67 L570 199 Q570 213 556 213 L100 213 Q86 213 86 227 L86 268"
+          strokeWidth="2"
+          stroke="rgba(153,153,153,1)"
+          fill="none"
+        />
+        {/* 可选：显示分段点，用于调试 */}
+        {pathSegments.map((segment, index) => (
+          <circle
+            key={index}
+            cx={segment.start.x}
+            cy={segment.start.y}
+            r="2"
+            fill="rgba(255,0,0,0.2)"
           />
-        </svg>
-        {position && <div
-          ref={divRef}
-          className="absolute w-32 h-8 bg-blue-500 rounded-full cursor-move transform -translate-x-1/2 -translate-y-1/2"
+        ))}
+      </svg>
+      {position && (
+        <div
+          className="absolute w-32 h-8 bg-blue-500 rounded-full cursor-move transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center text-white"
           style={{
             left: `${position.x}px`,
             top: `${position.y}px`,
           }}
           onMouseDown={handleMouseDown}
-        />}
-      </div>
-      <button
-        className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-        onClick={generateRandomPath}
-      >
-        Change Path
-      </button>
-    </>
+        >
+          Drag me
+        </div>
+      )}
+    </div>
   );
 };
 
