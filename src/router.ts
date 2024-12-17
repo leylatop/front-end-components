@@ -24,6 +24,7 @@ import { Home } from './container/Home'
 import DraggableDivAlongSvgPath from './container/DraggableDivAlongSvgPath'
 import SVGPathEditor from './container/SVGPathEditor'
 import SVGEditor from './container/SVGEditor'
+import SvgEditorBasePaperJS from './container/SvgEditorBasePaperJS'
 
 export const routers = [
   {path: '/', name: 'Home', component: Home },
@@ -57,5 +58,6 @@ export const routers = [
   {path: '/draggable-div-along-svg-path', name: 'Draggable Div Along Svg Path', component: DraggableDivAlongSvgPath},
   { path: '/svg-path-editor', name: 'SVG Path Editor', component: SVGPathEditor },
   { path: '/svg-editor', name: 'SVG Editor', component: SVGEditor },
+  { path: '/svg-editor-base-paperjs', name: 'SVG Editor Base PaperJS', component: SvgEditorBasePaperJS },
   // { path: '/snapshot', name: 'Snapshot', component: SnapShot },
 ]

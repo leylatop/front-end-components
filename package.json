@@ -20,6 +20,7 @@
     "js-web-screen-shot": "^1.9.9-rc.12",
     "localforage": "^1.10.0",
     "lodash": "^4.17.21",
+    "paper": "^0.12.18",
     "puppeteer": "^22.4.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.7.5",
+    "@types/paper": "^0.12.3",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@typescript-eslint/eslint-plugin": "^6.14.0",
